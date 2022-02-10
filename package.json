@@ -1,0 +1,12 @@
+{
+  "main": "./integration.js",
+  "name": "__TODO__",
+  "version": "3.0.0-beta",
+  "private": true,
+  "license": "MIT",
+  "author": "Polarity",
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "postman-request": "*"
+  }
+}
