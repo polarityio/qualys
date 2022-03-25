@@ -1,27 +1,14 @@
 module.exports = {
-  name: '__TODO__',
-  acronym: '__TODO__',
+  name: 'Qualys',
+  acronym: 'QLS',
   description: '__TODO__',
-  entityTypes: [
-    //__TODO__
-    'IPv4',
-    'IPv6',
-    'MD5',
-    'SHA1',
-    'SHA256',
-    'MAC',
-    'string',
-    'email',
-    'domain',
-    'url',
-    'hash'
-  ],
-  customTypes: [
-    {
-      key: 'key',
-      regex: /value/
-    }
-  ],
+  entityTypes: ['IPv4', 'IPv6', 'domain', 'cve'],
+  // customTypes: [
+  //   {
+  //     key: 'qid',
+  //     regex: /\d{1,8}/
+  //   }
+  // ],
   styles: ['./styles/styles.less'],
   onDemandOnly: true,
   block: {
@@ -41,7 +28,49 @@ module.exports = {
     rejectUnauthorized: false
   },
   logging: {
-    level: 'trace' //trace, debug, info, warn, error, fatal
+    level: 'info' //trace, debug, info, warn, error, fatal
   },
-  options: []
+
+  /** CONFIG OPTIONS */
+  /**
+   * Qualys URL:
+   * The URL of the Qualys you would like to connect to (including http:// or https://)
+   */
+  url: '',
+  /**
+   * Qualys Username:
+   * The Username for your Qualys Account
+   */
+  username: '',
+  /**
+   * Qualys Password:
+   * The Password associated with the Qualys Account
+   */
+  password: '',
+  /**
+   * KnowledgeBase Refresh Time:
+   * How often/when to refresh the local data source with the up to date data from
+   * the Qualys KnowledgeBase API.  This is in Cron Format and is defaulted
+   * to every day at midnight UTC. If you would like to never update
+   * your database after the initial install, set this string to `never-update`.
+   * Helpful Resources: https://crontab.guru/ .
+   */
+  // '42 * * * *' -> Execute when the minute is 42 (e.g. 19:42, 20:42, etc.).
+  // '*/5 * * * *' -> Execute every 5th minute
+  // '0 0 1 * *' -> Execute at 00:00 on day-of-month 1.
+  // 'never-update' -> Never Update after initial install of the database
+  dataRefreshTime: '0 0 * * *',
+
+  options: [
+    {
+      key: 'configOptionsHaveBeenSet',
+      name: 'Config Options Have Been Set',
+      description:
+        'In order for this integration to function, you must set the `url`, `username`, `password`, and `dataRefreshTime` properties in the `./config/config.js` file',
+      default: false,
+      type: 'boolean',
+      userCanEdit: false,
+      adminOnly: true
+    }
+  ]
 };

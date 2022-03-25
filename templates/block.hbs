@@ -1,0 +1,221 @@
+<ul class="nav nav-tabs">
+  {{#each tabKeys as |tabKey|}}
+    {{#if (get details tabKey "length")}}
+      <li class="nav-item">
+        <a
+          {{action "changeTab" tabKey}}
+          class="nav-link {{if (eq activeTab tabKey) "active"}}"
+          href="#"
+        >
+          {{titleize (humanize (dasherize tabKey))}}
+        </a>
+      </li>
+    {{/if}}
+  {{/each}}
+</ul>
+{{#each tabKeys as |tabKey|}}
+  {{#if (eq activeTab tabKey)}}
+    {{#each (get details tabKey) as |displayField displayFieldIndex|}}
+      {{#if displayField.isTitle}}
+        {{#if (and displayField.displayLink (or displayField.value displayField.label))}}
+          <h1 class="p-title pl-{{displayField.indent}}">
+            {{#if displayField.icon}}
+              {{fa-icon displayField.icon fixedWidth=true}}
+            {{/if}}
+            <a class="p-link" href="{{displayField.displayLink}}">
+              {{#if displayField.capitalize}}
+                {{capitalize (or displayField.label displayField.value)}}
+              {{else}}
+                {{or displayField.label displayField.value}}
+              {{/if}}
+            </a>
+            {{fa-icon "external-link" class="p-link ml-1"}}
+          </h1>
+        {{else if displayField.showLabelAndValue}}
+          <h1 class="p-title pl-{{displayField.indent}}">
+            {{#if displayField.displayLink}}
+              <a class="p-link" href="{{displayField.displayLink}}">
+                {{displayField.label}}: {{displayField.value}}
+              </a>
+            {{else}}
+              {{displayField.label}}: {{displayField.value}}
+            {{/if}}
+            {{#if
+              (and
+                displayField.pathIsLinkToMoreData (not displayField.moreDataIsPopulated)
+              )
+            }}
+              {{fa-icon "spinner-third" fixedWidth=true spin=true}}
+            {{/if}}
+          </h1>
+        {{else}}
+          <h1 class="p-title pl-{{displayField.indent}}">
+            {{#if displayField.displayLink}}
+              <a class="p-link" href="{{displayField.displayLink}}">
+                {{or displayField.label displayField.value}}
+              </a>
+            {{else}}
+              {{or displayField.label displayField.value}}
+            {{/if}}
+            {{#if
+              (and
+                displayField.pathIsLinkToMoreData (not displayField.moreDataIsPopulated)
+              )
+            }}
+              {{fa-icon "spinner-third" fixedWidth=true spin=true}}
+            {{/if}}
+          </h1>
+        {{/if}}
+      {{else if displayField.isTextBlock}}
+        <div class="block p-key pl-{{displayField.indent}}">
+          {{#if displayField.capitalize}}
+            {{capitalize displayField.value}}
+          {{else}}
+            {{displayField.value}}
+          {{/if}}
+        </div>
+      {{else if displayField.isListOfLinks}}
+        <div class="pl-{{displayField.indent}}">
+          <span class="p-key">{{displayField.label}}:</span>
+          <span class="p-value">
+            {{#each displayField.value as |content contentIndex|}}
+              <a class="p-link" href="{{content.url}}">{{#if content.capitalize}}{{capitalize content.id}}{{else}}{{content.id}}{{/if}}</a>{{#if (not (eq contentIndex (sub displayField.value.length 1)))}}, {{/if}}
+            {{/each}}
+          </span>
+        </div>
+      {{else if displayField.isHtml}}
+        <div>
+          {{#if (get expandableTitleStates (concat displayFieldIndex 0 displayField.label))}}
+            <a
+              href="#"
+              class="expandable-title"
+              {{on "click" (action "toggleExpandableTitle" displayFieldIndex 0 displayField.label)}}
+            >
+              <span class="text">{{displayField.label}}</span> {{fa-icon "angle-up"}}
+            </a>
+            <div class="block pl-2">
+              {{html-safe displayField.value}}
+            </div>
+          {{else}}
+            <a
+              href="#"
+              class="expandable-title"
+              {{on "click" (action "toggleExpandableTitle" displayFieldIndex 0 displayField.label)}}
+            >
+              <span class="text">{{displayField.label}}</span> {{fa-icon "angle-down"}}
+            </a>
+          {{/if}}
+        </div>
+      {{else if displayField.isList}}
+        <h1>
+          {{displayField.label}}
+        </h1>
+        <div class="block pl-1">
+          {{#each displayField.value as |itemDisplayFields itemDisplayFieldsIndex|}}
+            {{#if displayField.collapsibleListItems}}
+              {{#if (get expandableTitleStates (concat displayFieldIndex itemDisplayFieldsIndex displayField.label))}}
+                <a
+                  href="#"
+                  class="expandable-title"
+                  {{on "click" (action "toggleExpandableTitle" displayFieldIndex itemDisplayFieldsIndex displayField.label)}}
+                >
+                  <span class="text">{{itemDisplayFields.0.value}}</span> {{fa-icon "angle-up"}}
+                </a>
+                {{#each itemDisplayFields as |itemDisplayField itemDisplayFieldIndex|}}
+                  {{#if (not (eq itemDisplayFieldIndex 0))}}
+                    <div class="pl-2">
+                      <span class="p-key">{{itemDisplayField.label}}:</span>
+                      <span class="p-value">
+                        {{#if itemDisplayField.isDate}}
+                          {{moment-format
+                            itemDisplayField.value
+                            "MM/DD/YYYY HH:mm:ss"
+                            timeZone=timezone
+                          }}
+                        {{else}}
+                          {{itemDisplayField.value}}
+                        {{/if}}
+                      </span>
+                    </div>
+                  {{/if}}
+                {{/each}}
+              {{else}}
+                <a
+                  href="#"
+                  class="expandable-title"
+                  {{on "click" (action "toggleExpandableTitle" displayFieldIndex itemDisplayFieldsIndex displayField.label)}}
+                >
+                  <span class="text">{{itemDisplayFields.0.value}}</span> {{fa-icon "angle-down"}}
+                </a>
+              {{/if}}
+            {{else}}
+              {{#each itemDisplayFields as |itemDisplayField itemDisplayFieldIndex|}}
+                <div class="pl-2">
+                  <span class="p-key">{{itemDisplayField.label}}:</span>
+                  <span class="p-value">
+                    {{#if itemDisplayField.isDate}}
+                      {{moment-format
+                        itemDisplayField.value
+                        "MM/DD/YYYY HH:mm:ss"
+                        timeZone=timezone
+                      }}
+                    {{else}}
+                      {{itemDisplayField.value}}
+                    {{/if}}
+                  </span>
+                </div>
+              {{/each}}
+            {{/if}}
+          {{/each}}
+        </div>
+      {{else if displayField.isNewSectionLineBreak}}
+        <hr>
+      {{else}}
+        <div class="pl-{{displayField.indent}}">
+          <span class="p-key">{{displayField.label}}:</span>
+          <span class="p-value">
+            {{#if displayField.pathToOnePropertyFromMoreDataToDisplay}}
+              {{fa-icon "spinner-third" fixedWidth=true spin=true}}
+            {{else}}
+              {{#if displayField.isDate}}
+                {{moment-format
+                  displayField.value
+                  "MM/DD/YYYY HH:mm:ss"
+                  timeZone=timezone
+                }}
+              {{else if displayField.displayLink}}
+                <a class="p-link" href="{{displayField.displayLink}}">
+                  {{#if displayField.capitalize}}
+                    {{capitalize displayField.value}}
+                  {{else}}
+                    {{displayField.value}}
+                  {{/if}}
+                </a>
+              {{else}}
+                {{#if displayField.capitalize}}
+                  {{capitalize displayField.value}}
+                {{else}}
+                  {{displayField.value}}
+                {{/if}}
+              {{/if}}
+            {{/if}}
+          </span>
+        </div>
+      {{/if}}
+    {{/each}}
+    {{#if (and (eq activeTab "knowledgeBaseRecords") showLoadMoreKnowledgeBaseRecords) }}
+      {{#if loadingMoreKnowledgeBaseRecords}}
+        {{fa-icon "spinner-third" fixedWidth=true spin=true}}
+        <span class="loading">Loading More</span>
+      {{else}}
+        <a
+          href="#"
+          class="expandable-title load-more"
+          {{on "click" (action "loadMoreKnowledgeBaseRecords")}}
+        >
+          Load More...
+        </a>
+      {{/if}}
+    {{/if}}
+  {{/if}}
+{{/each}}

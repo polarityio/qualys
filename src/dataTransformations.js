@@ -13,10 +13,15 @@ const {
   curry,
   filter,
   eq,
-  isEmpty
+  isEmpty,
+  getOr,
+  join,
+  get,
+  isArray,
+  identity
 } = require('lodash/fp');
 
-const { IGNORED_IPS } = require('./constants');
+const { IGNORED_IPS, QUERY_PATHS_BY_TYPE } = require('./constants');
 
 const getKeys = (keys, items) =>
   Array.isArray(items)
@@ -124,6 +129,68 @@ const mapObjectAsync = async (func, obj) => {
 const parseErrorToReadableJSON = (error) =>
   JSON.parse(JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
+const buildQueryByQueryType = (queryType, entities) =>
+  flow(
+    map((entity) =>
+      flow(
+        getOr([], [entity.type, queryType]),
+        map((queryPath) => `${queryPath}: "${entity.value}"`),
+        join(' OR ')
+      )(QUERY_PATHS_BY_TYPE)
+    ),
+    join(' OR ')
+  )(entities);
+
+const millisToHoursMinutesAndSeconds = (millis) => {
+  let remainingMillis = millis;
+
+  const seconds = Math.floor((remainingMillis / 1000) % 60);
+  remainingMillis -= seconds * 1000;
+
+  const minutes = Math.floor((remainingMillis / 60000) % 60);
+  remainingMillis -= minutes * 60000;
+
+  const hours = Math.floor(remainingMillis / 3600000);
+
+  return (
+    (hours ? `${hours} hours, ` : '') +
+    (minutes ? `${minutes} minutes, ` : '') +
+    (seconds ? `${seconds} seconds` : '') +
+    (!hours && !minutes && !seconds ? `${millis}ms` : '')
+  );
+};
+
+const processResultWithProcessingFormat = (processingFormat) => (result) =>
+  mapObject(
+    (value, key) => [
+      key,
+      typeof value === 'string'
+        ? get(value, result)
+        : flow(get(value.path), value.process)(result)
+    ],
+    processingFormat
+  );
+
+const processPossibleList =
+  (shouldStringify = true) =>
+  (arrayOrObject) =>
+    arrayOrObject &&
+    (shouldStringify ? JSON.stringify : identity)(
+      isArray(arrayOrObject) ? arrayOrObject : [arrayOrObject]
+    );
+
+const xml2js = require('xml2js');
+
+const xmlToJson = async (xml) => {
+  const parser = new xml2js.Parser({
+    normalizeTags: true,
+    explicitArray: false,
+    charkey: 'value',
+    attrkey: 'attributes'
+  });
+  return await parser.parseStringPromise(xml);
+};
+
 module.exports = {
   getKeys,
   groupEntities,
@@ -133,5 +200,12 @@ module.exports = {
   mapObject,
   mapObjectAsync,
   transpose2DArray,
-  parseErrorToReadableJSON
+  parseErrorToReadableJSON,
+  buildQueryByQueryType,
+  millisToHoursMinutesAndSeconds,
+  processResultWithProcessingFormat,
+  processPossibleList,
+  xmlToJson,
+  and,
+  or
 };
