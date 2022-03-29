@@ -34,6 +34,7 @@ const getKnex = async () => {
 const startup = async (logger) => {
   Logger = logger;
   requestWithDefaults = createRequestWithDefaults(Logger);
+  const config = require('./config/config');
 
   if (!config.disableKnowledgeBase) {
     try {
@@ -50,7 +51,6 @@ const startup = async (logger) => {
         useNullAsDefault: true
       });
       if (job) job.cancel();
-      const config = require('./config/config');
 
       await knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)();
       if (config.dataRefreshTime !== 'never-update') {

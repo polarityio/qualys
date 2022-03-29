@@ -14,18 +14,19 @@ const queryHostDetectionListForAllEntities = async (
   requestWithDefaults,
   Logger
 ) => {
-  const allHostDetectionResults = await Promise.all(
-    flow(
-      filter(flow(get('type'), or(eq('IPv4'), eq('IPv6')))),
-      map(queryHostDetectionListForOneIpAddress(config, requestWithDefaults, Logger))
-    )(entities)
-  );
+  const allHostDetectionResults = await flow(
+    filter(flow(get('type'), or(eq('IPv4'), eq('IPv6')))),
+    queryHostDetectionListForIpAddresses(config, requestWithDefaults, Logger)
+  )(entities);
 
   return flow(flatten, uniqBy('id'))(allHostDetectionResults);
 };
 
-const queryHostDetectionListForOneIpAddress =
-  (config, requestWithDefaults, Logger) => async (entity) => {
+const queryHostDetectionListForIpAddresses =
+  (config, requestWithDefaults, Logger, hostDetectionResults = []) =>
+  async ([entity, ...entities]) => {
+    if (!entity) return hostDetectionResults;
+
     try {
       const responseXml = getOr(
         '',
@@ -54,7 +55,12 @@ const queryHostDetectionListForOneIpAddress =
         hostDetections
       );
 
-      return processedJson;
+      return await queryHostDetectionListForIpAddresses(
+        config,
+        requestWithDefaults,
+        Logger,
+        hostDetectionResults.concat(processedJson)
+      )(entities);
     } catch (error) {
       const err = parseErrorToReadableJSON(error);
       Logger.error(
