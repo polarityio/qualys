@@ -33,7 +33,7 @@ const getAndInsertKnowledgeBaseRecords = async (
   let id_max = QID_PAGE_SIZE;
   let numberOfEmptyPagesSkipped = 0;
   while (numberOfEmptyPagesSkipped * QID_PAGE_SIZE <= MAX_QID_TO_LOOK_AHEAD) {
-    x = await getAndInsertKnowledgeBaseRecordsBatch(
+    batchMetaData = await getAndInsertKnowledgeBaseRecordsBatch(
       knex,
       config,
       requestWithDefaults,
@@ -41,8 +41,8 @@ const getAndInsertKnowledgeBaseRecords = async (
       id_max,
       numberOfEmptyPagesSkipped
     );
-    id_max = x.id_max;
-    numberOfEmptyPagesSkipped = x.numberOfEmptyPagesSkipped;
+    id_max = batchMetaData.id_max;
+    numberOfEmptyPagesSkipped = batchMetaData.numberOfEmptyPagesSkipped;
   }
 };
 const getAndInsertKnowledgeBaseRecordsBatch = async (
@@ -54,8 +54,6 @@ const getAndInsertKnowledgeBaseRecordsBatch = async (
   numberOfEmptyPagesSkipped
 ) => {
   try {
-    Logger.trace({ test: 222222, id_max });
-
     const responseXml = getOr(
       '',
       'body',
@@ -92,12 +90,6 @@ const getAndInsertKnowledgeBaseRecordsBatch = async (
       first
     )(await knex.raw(`SELECT COUNT(*) FROM ${TEMP_TABLE_NAME}`));
 
-    Logger.trace({
-      test: 1111111,
-      recordsFormattedForDatabase: size(recordsFormattedForDatabase),
-      recordCount
-    });
-
     return {
       id_max: id_max + QID_PAGE_SIZE,
       numberOfEmptyPagesSkipped: size(recordsFormattedForDatabase)
@@ -108,10 +100,10 @@ const getAndInsertKnowledgeBaseRecordsBatch = async (
     const err = parseErrorToReadableJSON(error);
     Logger.error(
       {
-        detail: 'Failed to Query Knowledge Base',
+        detail: 'Failed to Query KnowledgeBase',
         formattedError: err
       },
-      'Querying Knowledge Base Failed'
+      'Querying KnowledgeBase Failed'
     );
 
     throw error;

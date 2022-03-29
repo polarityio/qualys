@@ -52,7 +52,7 @@ const createSummary = (entity, { hostDetections, knowledgeBaseRecords }, Logger)
     .concat(size(hostDetections) ? `Host Detections: ${size(hostDetections)}` : [])
     .concat(
       size(knowledgeBaseRecords)
-        ? `Knowledge Base Records: ${size(knowledgeBaseRecords)}${
+        ? `KnowledgeBase Records: ${size(knowledgeBaseRecords)}${
             size(knowledgeBaseRecords) === 20 ? '+' : ''
           }`
         : []

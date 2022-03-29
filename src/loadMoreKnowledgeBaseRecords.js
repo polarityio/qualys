@@ -40,11 +40,11 @@ const loadMoreKnowledgeBaseRecords = async (
     const err = parseErrorToReadableJSON(error);
     Logger.error(
       {
-        detail: 'Failed to Loading More Knowledge Base Records',
+        detail: 'Failed to Loading More KnowledgeBase Records',
         options,
         formattedError: err
       },
-      'Loading More Knowledge Base Records Failed'
+      'Loading More KnowledgeBase Records Failed'
     );
     return callback({
       errors: [

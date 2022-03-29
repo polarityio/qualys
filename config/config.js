@@ -61,13 +61,23 @@ module.exports = {
   // '0 0 1 * *' -> Execute at 00:00 on day-of-month 1.
   // 'never-update' -> Never Update after initial install of the database
   dataRefreshTime: '0 0 * * *',
+  /**
+   * Disable KnowledgeBase:
+   * In case of technical issues with the KnowledgeBase Download/Refresh process or time 
+   * it takes to run the process, or any issues with the KnowledgeBase Lookup times, please
+   * reach out to support@polarity.io.  If you wish to continue to use the integration and 
+   * only use the Host Detections List Query with IP Addresses set this option to true.
+   */
+  disableKnowledgeBase: false,
 
   options: [
     {
       key: 'configOptionsHaveBeenSet',
       name: 'Config Options Have Been Set',
       description:
-        'In order for this integration to function, you must set the `url`, `username`, `password`, and `dataRefreshTime` properties in the `./config/config.js` file',
+        'In order for this integration to function, you must set the `url`, `username`, ' +
+        '`password`, and `dataRefreshTime` properties in the `./config/config.js` file, ' +
+        'and restart this Integration.  Any updates to these properties will also require a restart of the Integration.',
       default: false,
       type: 'boolean',
       userCanEdit: false,

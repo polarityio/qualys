@@ -35,35 +35,37 @@ const startup = async (logger) => {
   Logger = logger;
   requestWithDefaults = createRequestWithDefaults(Logger);
 
-  try {
-    if (!fs.existsSync(DATABASE_PATH)) {
-      fs.mkdirSync('./data', { recursive: true });
-      fs.writeFileSync(DATABASE_PATH, '');
-    }
+  if (!config.disableKnowledgeBase) {
+    try {
+      if (!fs.existsSync(DATABASE_PATH)) {
+        fs.mkdirSync('./data', { recursive: true });
+        fs.writeFileSync(DATABASE_PATH, '');
+      }
 
-    knex = await require('knex')({
-      client: 'sqlite3',
-      connection: {
-        filename: DATABASE_PATH
-      },
-      useNullAsDefault: true
-    });
-    if (job) job.cancel();
-    const config = require('./config/config');
-
-    await knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)();
-    if (config.dataRefreshTime !== 'never-update') {
+      knex = await require('knex')({
+        client: 'sqlite3',
+        connection: {
+          filename: DATABASE_PATH
+        },
+        useNullAsDefault: true
+      });
       if (job) job.cancel();
+      const config = require('./config/config');
 
-      job = schedule.scheduleJob(
-        config.dataRefreshTime,
-        knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)
-      );
+      await knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)();
+      if (config.dataRefreshTime !== 'never-update') {
+        if (job) job.cancel();
+
+        job = schedule.scheduleJob(
+          config.dataRefreshTime,
+          knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)
+        );
+      }
+    } catch (error) {
+      const err = parseErrorToReadableJSON(error);
+      Logger.error({ error, formattedError: err }, 'Error on Startup');
+      throw error;
     }
-  } catch (error) {
-    const err = parseErrorToReadableJSON(error);
-    Logger.error({ error, formattedError: err }, 'Error on Startup');
-    throw error;
   }
 };
 
@@ -74,7 +76,7 @@ const doLookup = async (entities, options, cb) => {
 
   let lookupResults = [];
   try {
-    if (!knex) knex = await getKnex();
+    if (!config.disableKnowledgeBase && !knex) knex = await getKnex();
 
     lookupResults = await getLookupResults(
       entities,
@@ -158,22 +160,24 @@ const validateOptions = async (options, callback) => {
 
     Logger.info(`Refresh Data Time set to ${dataRefreshTime} hours`);
 
-    try {
-      if (!knex) knex = await getKnex();
+    if (!config.disableKnowledgeBase) {
+      try {
+        if (!knex) knex = await getKnex();
 
-      await knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)();
+        await knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)();
 
-      if (dataRefreshTime !== 'never-update') {
-        if (job) job.cancel();
+        if (dataRefreshTime !== 'never-update') {
+          if (job) job.cancel();
 
-        job = schedule.scheduleJob(
-          dataRefreshTime,
-          knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)
-        );
+          job = schedule.scheduleJob(
+            dataRefreshTime,
+            knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)
+          );
+        }
+      } catch (error) {
+        const err = parseErrorToReadableJSON(error);
+        Logger.error({ error, formattedError: err }, 'knowledgeBaseIntoDb Failed');
       }
-    } catch (error) {
-      const err = parseErrorToReadableJSON(error);
-      Logger.error({ error, formattedError: err }, 'knowledgeBaseIntoDb Failed');
     }
   }
 

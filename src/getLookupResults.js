@@ -8,6 +8,7 @@ const queryVulnerabilitiesForAllEntities = require('./querying/queryVulnerabilit
 const queryHostDetectionListForAllEntities = require('./querying/queryHostDetectionListForAllEntities');
 const queryKnowledgeBase = require('./querying/queryKnowledgeBase');
 const associateDataWithEntities = require('./associateDataWithEntities');
+const { TABLE_NAME } = require('./constants');
 
 const getLookupResults = async (entities, config, knex, requestWithDefaults, Logger) => {
   const entitiesWithCustomTypesSpecified = map(
@@ -38,6 +39,11 @@ const getLookupResults = async (entities, config, knex, requestWithDefaults, Log
 };
 
 const getData = async (entitiesPartition, config, knex, requestWithDefaults, Logger) => {
+  let knexIsLoaded;
+  try {
+    knexIsLoaded = knex && (await knex.raw(`SELECT COUNT(*) FROM ${TABLE_NAME}`));
+  } catch (error) {}
+
   const [allHostDetections, allFoundKnowledgeBaseRecords] = await Promise.all([
     queryHostDetectionListForAllEntities(
       entitiesPartition,
@@ -45,10 +51,13 @@ const getData = async (entitiesPartition, config, knex, requestWithDefaults, Log
       requestWithDefaults,
       Logger
     ),
-    knex ? queryKnowledgeBase(entitiesPartition, knex, Logger) : async () => []
+    !config.disableKnowledgeBase && knexIsLoaded
+      ? queryKnowledgeBase(entitiesPartition, knex, Logger)
+      : async () => []
   ]);
 
-  Logger.trace({ allHostDetections,allFoundKnowledgeBaseRecords });
+  Logger.trace({ allHostDetections, allFoundKnowledgeBaseRecords });
+  
   return { allHostDetections, allFoundKnowledgeBaseRecords };
 };
 

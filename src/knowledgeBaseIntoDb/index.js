@@ -22,7 +22,7 @@ const knowledgeBaseIntoDb = (knex, config, requestWithDefaults, Logger) => async
     )(['url', 'username', 'password']);
     if (requiredOptionsAreMissing || !knex) return;
 
-    Logger.info(`Started getting Records from Qualys Knowledge Base`);
+    Logger.info(`Started getting Records from Qualys KnowledgeBase`);
 
     const startTime = new Date();
 
@@ -44,11 +44,11 @@ const knowledgeBaseIntoDb = (knex, config, requestWithDefaults, Logger) => async
     const endTime = new Date();
     const loadTime = millisToHoursMinutesAndSeconds(endTime - startTime);
     Logger.info(
-      `Finished getting Records from Qualys Knowledge Base.  ${recordCount} Records Available for Search. Load Time: ${loadTime}`
+      `Finished getting Records from Qualys KnowledgeBase.  ${recordCount} Records Available for Search. Load Time: ${loadTime}`
     );
   } catch (error) {
     const err = parseErrorToReadableJSON(error)
-    Logger.error({ err }, 'Failed to get Records from Qualys Knowledge Base');
+    Logger.error({ err }, 'Failed to get Records from Qualys KnowledgeBase');
   }
 };
 
