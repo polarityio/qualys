@@ -1,7 +1,7 @@
 # Polarity Qualys Integration
 ![image](https://img.shields.io/badge/status-beta-green.svg)
 
-The Qualys Cloud Platform helps businesses simplify security operations and lower the cost of compliance by delivering critical security intelligence on demand and automating the full spectrum of auditing, compliance and protection for IT systems and web applications.  The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and Knowledge base for IP Addresses, Domains, CVEs and optionally QIDs.
+The Qualys Cloud Platform helps businesses simplify security operations and lower the cost of compliance by delivering critical security intelligence on demand and automating the full spectrum of auditing, compliance and protection for IT systems and web applications.  The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, Domains, CVEs and optionally QIDs.
 
 <div style="display:flex; align-items: flex-start;">
   <img width="370" alt="Integration Example" src="./assets/hostDetections.png">
