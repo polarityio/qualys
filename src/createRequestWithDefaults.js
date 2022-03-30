@@ -103,7 +103,7 @@ const createRequestWithDefaults = (Logger) => {
     Logger.error({ err });
     let newError  = new Error(err.message)
     newError.status = err.status;
-    newError.requestOptions = err.requestOptions;
+    newError.requestOptions = JSON.stringify(err.requestOptions);
     newError.description = err.description;
     newError.stack = err.stack;
     throw newError;

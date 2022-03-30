@@ -4,12 +4,12 @@ module.exports = {
   description:
     "The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, Domains, CVEs and optionally QIDs.",
   entityTypes: ['IPv4', 'IPv6', 'domain', 'cve'],
-  // customTypes: [
-  //   {
-  //     key: 'qid',
-  //     regex: /\d{1,8}/
-  //   }
-  // ],
+  customTypes: [
+    {
+      key: 'qid',
+      regex: /(?:QID|qid):\s*\d{1,8}/
+    }
+  ],
   styles: ['./styles/styles.less'],
   onDemandOnly: true,
   block: {
@@ -63,9 +63,9 @@ module.exports = {
   dataRefreshTime: '0 0 * * *',
   /**
    * Disable KnowledgeBase:
-   * In case of technical issues with the KnowledgeBase Download/Refresh process or time 
+   * In case of technical issues with the KnowledgeBase Download/Refresh process or time
    * it takes to run the process, or any issues with the KnowledgeBase Lookup times, please
-   * reach out to support@polarity.io.  If you wish to continue to use the integration and 
+   * reach out to support@polarity.io.  If you wish to continue to use the integration and
    * only use the Host Detections List Query with IP Addresses set this option to true.
    */
   disableKnowledgeBase: false,

@@ -73,9 +73,9 @@ const HOST_DETECTION_DISPLAY_FORMAT = {
       status: 'Status',
       is_ignored: 'Is Ignored',
       is_disabled: 'Is Disabled',
+      times_found: 'Times Found',
       first_found_datetime: { label: 'First Found', isDate: true },
       last_found_datetime: { label: 'Last Found', isDate: true },
-      times_found: 'Times Found',
       last_test_datetime: { label: 'Last tested', isDate: true },
       last_update_datetime: { label: 'Last Updated', isDate: true },
       last_processed_datetime: { label: 'Last Processed', isDate: true }

@@ -1,4 +1,16 @@
-const { get, getOr, map, flow, filter, eq, uniqBy, flatten } = require('lodash/fp');
+const { identity } = require('lodash');
+const {
+  get,
+  getOr,
+  map,
+  flow,
+  filter,
+  eq,
+  uniqBy,
+  join,
+  cond,
+  size
+} = require('lodash/fp');
 
 const {
   parseErrorToReadableJSON,
@@ -14,19 +26,25 @@ const queryHostDetectionListForAllEntities = async (
   requestWithDefaults,
   Logger
 ) => {
-  const allHostDetectionResults = await flow(
+  const allHostDetectionResultForIpAddresses = await flow(
     filter(flow(get('type'), or(eq('IPv4'), eq('IPv6')))),
-    queryHostDetectionListForIpAddresses(config, requestWithDefaults, Logger)
+    map(get('value')),
+    cond([[size, queryHostDetectionList('ips', config, requestWithDefaults, Logger)]])
   )(entities);
 
-  return flow(flatten, uniqBy('id'))(allHostDetectionResults);
+  const allHostDetectionResultForQids = await flow(
+    filter(flow(get('type'), eq('qid'))),
+    map(get('value')),
+    cond([[size, queryHostDetectionList('qids', config, requestWithDefaults, Logger)]])
+  )(entities);
+
+  return uniqBy('id', allHostDetectionResultForIpAddresses).concat(
+    uniqBy('id', allHostDetectionResultForQids)
+  );
 };
 
-const queryHostDetectionListForIpAddresses =
-  (config, requestWithDefaults, Logger, hostDetectionResults = []) =>
-  async ([entity, ...entities]) => {
-    if (!entity) return hostDetectionResults;
-
+const queryHostDetectionList =
+  (type, config, requestWithDefaults, Logger) => async (entityValues) => {
     try {
       const responseXml = getOr(
         '',
@@ -36,7 +54,7 @@ const queryHostDetectionListForIpAddresses =
           url: `${config.url}/api/2.0/fo/asset/host/vm/detection/`,
           qs: {
             action: 'list',
-            ips: entity.value,
+            [type]: join(',', entityValues),
             show_asset_id: 1,
             show_results: 1
           },
@@ -55,12 +73,7 @@ const queryHostDetectionListForIpAddresses =
         hostDetections
       );
 
-      return await queryHostDetectionListForIpAddresses(
-        config,
-        requestWithDefaults,
-        Logger,
-        hostDetectionResults.concat(processedJson)
-      )(entities);
+      return processedJson;
     } catch (error) {
       const err = parseErrorToReadableJSON(error);
       Logger.error(

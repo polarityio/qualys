@@ -52,7 +52,7 @@ const startup = async (logger) => {
       });
       if (job) job.cancel();
 
-      await knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)();
+      knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)();
       if (config.dataRefreshTime !== 'never-update') {
         if (job) job.cancel();
 
@@ -164,7 +164,7 @@ const validateOptions = async (options, callback) => {
       try {
         if (!knex) knex = await getKnex();
 
-        await knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)();
+        knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)();
 
         if (dataRefreshTime !== 'never-update') {
           if (job) job.cancel();

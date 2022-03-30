@@ -1,4 +1,4 @@
-const { flow, map, split, first, last } = require('lodash/fp');
+const { flow, map, split, first, last, trim } = require('lodash/fp');
 
 const { splitOutIgnoredIps } = require('./dataTransformations');
 const createLookupResults = require('./createLookupResults');
@@ -11,13 +11,15 @@ const associateDataWithEntities = require('./associateDataWithEntities');
 const { TABLE_NAME } = require('./constants');
 
 const getLookupResults = async (entities, config, knex, requestWithDefaults, Logger) => {
-  const entitiesWithCustomTypesSpecified = map(
-    ({ type, types, ...entity }) => ({
+  const entitiesWithCustomTypesSpecified = map(({ type, types, value, ...entity }) => {
+    type = type === 'custom' ? flow(first, split('.'), last)(types) : type;
+
+    return {
       ...entity,
-      type: type === 'custom' ? flow(first, split('.'), last)(types) : type
-    }),
-    entities
-  );
+      type,
+      value: type === 'qid' ? flow(split(':'), last, trim) (value): value
+    };
+  }, entities);
 
   const { entitiesPartition, ignoredIpLookupResults } = splitOutIgnoredIps(
     entitiesWithCustomTypesSpecified
@@ -57,7 +59,7 @@ const getData = async (entitiesPartition, config, knex, requestWithDefaults, Log
   ]);
 
   Logger.trace({ allHostDetections, allFoundKnowledgeBaseRecords });
-  
+
   return { allHostDetections, allFoundKnowledgeBaseRecords };
 };
 

@@ -8,7 +8,7 @@ const {
   identity,
   keys,
   assign,
-  gte
+  eq
 } = require('lodash/fp');
 
 const {
@@ -23,6 +23,7 @@ const createLookupResults = (foundEntities, options, Logger) =>
 
     const lookupResult = {
       entity,
+      displayValue: entity.type === 'qid' ? `QID: ${entity.value}` : entity.value,
       data: !!formattedQueryResult
         ? {
             summary: createSummary(entity, results, Logger),
@@ -32,12 +33,9 @@ const createLookupResults = (foundEntities, options, Logger) =>
                 showLoadMoreKnowledgeBaseRecords: flow(
                   get('knowledgeBaseRecords'),
                   size,
-                  gte(20)
+                  eq(20)
                 )(results),
-                knowledgeBaseRecordCount: flow(
-                  get('knowledgeBaseRecords'),
-                  size
-                )(results)
+                knowledgeBaseRecordCount: flow(get('knowledgeBaseRecords'), size)(results)
               })
             )(formattedQueryResult)
           }
