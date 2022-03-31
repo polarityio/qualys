@@ -136,6 +136,24 @@
                           {{itemDisplayField.value}}
                         {{/if}}
                       </span>
+                      {{#if itemDisplayField.fieldIsCopyable}}
+                        <button
+                          type="button"
+                          title="Copy {{displayField.label}}"
+                          class="no-style-button copy-button"
+                          {{action "copyField" itemDisplayField.value displayFieldIndex itemDisplayField.label itemDisplayFieldIndex itemDisplayField.shouldCopyFieldLabel}}
+                        >
+                          {{fa-icon
+                            "copy"
+                            fixedWidth=true
+                            size="md"
+                            class="operation-button-icon"
+                          }}
+                        </button>
+                        {{#if (get copiedStates (concat displayFieldIndex itemDisplayField.label itemDisplayFieldIndex))}}
+                          <span class="copied-label">Copied</span>
+                        {{/if}}
+                      {{/if}}
                     </div>
                   {{/if}}
                 {{/each}}
@@ -163,6 +181,24 @@
                       {{itemDisplayField.value}}
                     {{/if}}
                   </span>
+                  {{#if itemDisplayField.fieldIsCopyable}}
+                    <button
+                      type="button"
+                      title="Copy {{displayField.label}}"
+                      class="no-style-button copy-button"
+                      {{action "copyField" itemDisplayField.value displayFieldIndex itemDisplayField.label itemDisplayFieldIndex itemDisplayField.shouldCopyFieldLabel}}
+                    >
+                      {{fa-icon
+                        "copy"
+                        fixedWidth=true
+                        size="md"
+                        class="operation-button-icon"
+                      }}
+                    </button>
+                    {{#if (get copiedStates (concat displayFieldIndex itemDisplayField.label itemDisplayFieldIndex))}}
+                      <span class="copied-label">Copied</span>
+                    {{/if}}
+                  {{/if}}
                 </div>
               {{/each}}
             {{/if}}
@@ -170,6 +206,65 @@
         </div>
       {{else if displayField.isNewSectionLineBreak}}
         <hr>
+      {{else if displayField.fieldIsCopyable}}
+        <div class="pl-{{displayField.indent}}">
+          <span class="p-key">{{displayField.label}}:</span>
+          <span class="p-value">
+            {{#if displayField.isDate}}
+              {{moment-format
+                displayField.value
+                "MM/DD/YYYY HH:mm:ss"
+                timeZone=timezone
+              }}
+            {{else if displayField.capitalize}}
+              {{capitalize displayField.value}}
+            {{else}}
+              {{displayField.value}}
+            {{/if}}
+          </span>
+          <button
+            type="button"
+            title="Copy {{displayField.label}}"
+            class="no-style-button copy-button"
+            {{action "copyField" displayField.value displayFieldIndex displayField.label 0 displayField.shouldCopyFieldLabel}}
+          >
+            {{fa-icon
+              "copy"
+              fixedWidth=true
+              size="md"
+              class="operation-button-icon"
+            }}
+          </button>
+          {{#if (get copiedStates (concat displayFieldIndex displayField.label 0))}}
+            <span class="copied-label">Copied</span>
+          {{/if}}
+        </div>
+      {{else if displayField.isOnMessageButton}}
+        <div class="d-flex flex-row justify-content-between align-items-center">
+          <div>
+            {{#if (get isRunningStates displayField.label displayFieldIndex)}}
+              {{fa-icon "spinner-third" fixedWidth=true spin=true}}
+              {{or displayField.runningText "Running"}}
+            {{/if}}
+          </div>
+          <button
+            {{action "customOnMessage" displayField displayFieldIndex}}
+            class="p-btn btn btn-light mt-1"
+            disabled={{get isRunningStates displayField.label displayFieldIndex}}
+          >
+            {{displayField.label}}
+          </button>
+        </div>
+        {{#if (get messageStates displayField.label displayFieldIndex)}}
+          <div class="alert alert-info mt-1">
+            {{get messageStates displayField.label displayFieldIndex}}
+          </div>
+        {{/if}}
+        {{#if (get errorMessageStates displayField.label displayFieldIndex)}}
+          <div class="alert alert-danger mt-1">
+            {{get errorMessageStates displayField.label displayFieldIndex}}
+          </div>
+        {{/if}}
       {{else}}
         <div class="pl-{{displayField.indent}}">
           <span class="p-key">{{displayField.label}}:</span>
@@ -191,12 +286,10 @@
                     {{displayField.value}}
                   {{/if}}
                 </a>
+              {{else if displayField.capitalize}}
+                {{capitalize displayField.value}}
               {{else}}
-                {{#if displayField.capitalize}}
-                  {{capitalize displayField.value}}
-                {{else}}
-                  {{displayField.value}}
-                {{/if}}
+                {{displayField.value}}
               {{/if}}
             {{/if}}
           </span>

@@ -17,7 +17,7 @@ const {
 } = require('./constants');
 const getDisplayResults = require('./getDisplayResults');
 
-const createLookupResults = (foundEntities, options, Logger) =>
+const createLookupResults = (foundEntities, Logger) =>
   map(({ entity, results }) => {
     const formattedQueryResult = formatQueryResult(results);
 

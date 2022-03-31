@@ -1,4 +1,4 @@
-const { flow, map, split, first, last, trim } = require('lodash/fp');
+const { flow, map, split, first, last, trim, concat, get, uniqBy } = require('lodash/fp');
 
 const { splitOutIgnoredIps } = require('./dataTransformations');
 const createLookupResults = require('./createLookupResults');
@@ -46,7 +46,7 @@ const getData = async (entitiesPartition, config, knex, requestWithDefaults, Log
     knexIsLoaded = knex && (await knex.raw(`SELECT COUNT(*) FROM ${TABLE_NAME}`));
   } catch (error) {}
 
-  const [allHostDetections, allFoundKnowledgeBaseRecords] = await Promise.all([
+  const [initialHostDetections, allFoundKnowledgeBaseRecords] = await Promise.all([
     queryHostDetectionListForAllEntities(
       entitiesPartition,
       config,
@@ -58,6 +58,21 @@ const getData = async (entitiesPartition, config, knex, requestWithDefaults, Log
       : async () => []
   ]);
 
+  const knowledgeBaseDetections = await queryHostDetectionListForAllEntities(
+    map(
+      flow(get('qid'), (qid) => ({ type: 'qid', value: qid })),
+      allFoundKnowledgeBaseRecords
+    ),
+    config,
+    requestWithDefaults,
+    Logger
+  );
+
+  const allHostDetections = flow(
+    concat(knowledgeBaseDetections),
+    uniqBy('id')
+  )(initialHostDetections);
+  
   Logger.trace({ allHostDetections, allFoundKnowledgeBaseRecords });
 
   return { allHostDetections, allFoundKnowledgeBaseRecords };

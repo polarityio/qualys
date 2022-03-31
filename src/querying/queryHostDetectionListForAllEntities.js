@@ -64,7 +64,7 @@ const queryHostDetectionList =
       );
 
       const hostDetections = flow(
-        getOr({}, 'host_list_vm_detection_output.response.host_list.host'),
+        get('host_list_vm_detection_output.response.host_list.host'),
         processPossibleList(false)
       )(await xmlToJson(responseXml));
 

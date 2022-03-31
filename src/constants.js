@@ -64,7 +64,7 @@ const HOST_DETECTION_DISPLAY_FORMAT = {
     collapsibleListItems: true,
     itemDisplayFormat: {
       results: 'Detection Result',
-      qid: 'QID',
+      qid: { label: 'QID', fieldIsCopyable: true, shouldCopyFieldLabel: true },
       type: 'Detection Type',
       severity: 'Severity',
       port: 'Port',
@@ -86,7 +86,7 @@ const HOST_DETECTION_DISPLAY_FORMAT = {
 
 const KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT = {
   title: { isTitle: true },
-  qid: 'QID',
+  qid: { label: 'QID', fieldIsCopyable: true, shouldCopyFieldLabel: true },
   severity: 'Severity',
   category: 'Category',
   sub_category: 'Sub Category',
@@ -101,7 +101,7 @@ const KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT = {
   vender_references: { label: 'Vendor References', isListOfLinks: true },
   diagnosis: { label: 'Diagnosis', isHtml: true },
   solution: { label: 'Solution', isHtml: true },
-  newSectionLineBreak: { isNewSectionLineBreak: true },
+  newSectionLineBreak: { isNewSectionLineBreak: true }
 };
 
 const KNOWLEDGE_BASE_QUERY_PAGE_LIMIT = 20;

@@ -1,23 +1,29 @@
-const { map, toLower, filter, flow, replace, includes } = require("lodash/fp");
+const { map, toLower, filter, flow, replace, includes, get, concat, uniqBy, flatMap } = require('lodash/fp');
 
 const associateDataWithEntities = (
   entities,
   { allHostDetections, allFoundKnowledgeBaseRecords },
   Logger
 ) =>
-  map(
-    (entity) => ({
+  map((entity) => {
+    const knowledgeBaseRecords = getObjectsContainingString(
+      entity.value,
+      allFoundKnowledgeBaseRecords
+    );
+    const hostDetections = flow(
+      flatMap(({ qid }) => getObjectsContainingString(qid, allHostDetections)),
+      concat(getObjectsContainingString(entity.value, allHostDetections)),
+      uniqBy('id')
+    )(knowledgeBaseRecords);
+
+    return {
       entity,
       results: {
-        hostDetections: getObjectsContainingString(entity.value, allHostDetections),
-        knowledgeBaseRecords: getObjectsContainingString(
-          entity.value,
-          allFoundKnowledgeBaseRecords
-        )
+        hostDetections,
+        knowledgeBaseRecords
       }
-    }),
-    entities
-  );
+    };
+  }, entities);
 
 const getObjectsContainingString = (string, objs) =>
   filter(
@@ -29,5 +35,5 @@ const getObjectsContainingString = (string, objs) =>
     ),
     objs
   );
-  
+
 module.exports = associateDataWithEntities;
