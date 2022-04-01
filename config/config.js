@@ -66,7 +66,7 @@ module.exports = {
    * In case of technical issues with the KnowledgeBase Download/Refresh process or time
    * it takes to run the process, or any issues with the KnowledgeBase Lookup times, please
    * reach out to support@polarity.io.  If you wish to continue to use the integration and
-   * only use the Host Detections List Query with IP Addresses set this option to true.
+   * only use the Host Detections List Query with IP Addresses and QIDs, set this option to true.
    */
   disableKnowledgeBase: false,
 
