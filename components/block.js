@@ -1,5 +1,22 @@
+const uniqBy = (arr, predicate) => {
+  const cb = typeof predicate === 'function' ? predicate : (o) => o[predicate];
+
+  return [
+    ...arr
+      .reduce((map, item) => {
+        const key = item === null || item === undefined ? item : cb(item);
+
+        map.has(key) || map.set(key, item);
+
+        return map;
+      }, new Map())
+      .values()
+  ];
+};
+
 polarity.export = PolarityComponent.extend({
   details: Ember.computed.alias('block.data.details'),
+  summary: Ember.computed.alias('block.data.summary'),
   tabKeys: Ember.computed.alias('details.tabKeys'),
   showLoadMoreKnowledgeBaseRecords: Ember.computed.alias(
     'details.showLoadMoreKnowledgeBaseRecords'
@@ -13,6 +30,7 @@ polarity.export = PolarityComponent.extend({
   isRunningStates: {},
   messageStates: {},
   errorMessageStates: {},
+  hostDetectionsFound: false,
   activeTab: '',
   knowledgeBasePage: 0,
   init() {
@@ -156,15 +174,19 @@ polarity.export = PolarityComponent.extend({
           action: 'loadMoreKnowledgeBaseRecords',
           data: {
             entity: outerThis.get('block.entity'),
-            knowledgeBasePage: outerThis.get('knowledgeBasePage') + 1
+            knowledgeBasePage: outerThis.get('knowledgeBasePage') + 1,
+            summary: outerThis.get('summary')
           }
         })
         .then(
           ({
             knowledgeBaseRecords,
+            hostDetections,
             showLoadMoreKnowledgeBaseRecords,
-            knowledgeBaseRecordCount
+            knowledgeBaseRecordCount,
+            newSummaryTags
           }) => {
+            if (newSummaryTags) this.set('summary', newSummaryTags);
             outerThis.set('knowledgeBaseRecordCount', knowledgeBaseRecordCount);
             outerThis.set(
               'showLoadMoreKnowledgeBaseRecords',
@@ -175,6 +197,22 @@ polarity.export = PolarityComponent.extend({
               'details.knowledgeBaseRecords',
               outerThis.get('details.knowledgeBaseRecords').concat(knowledgeBaseRecords)
             );
+            if (hostDetections && hostDetections.length) {
+              outerThis.set(
+                'details.hostDetections',
+                uniqBy(
+                  outerThis.get('details.hostDetections').concat(hostDetections),
+                  (hostDetection) => `${hostDetection.label}${hostDetection.value}`
+                )
+              );
+
+              outerThis.set(`hostDetectionsFound`, true);
+              outerThis.get('block').notifyPropertyChange('data');
+              setTimeout(() => {
+                outerThis.set(`hostDetectionsFound`, false);
+                outerThis.get('block').notifyPropertyChange('data');
+              }, 5000);
+            }
           }
         )
         .finally(() => {

@@ -82,6 +82,20 @@ module.exports = {
       type: 'boolean',
       userCanEdit: false,
       adminOnly: true
+    },
+    {
+      key: 'shouldDeepSearchForAssets',
+      name: 'Do Deep Search For Assets (Host List Detections)',
+      description:
+        'Currently, Qualys only allows for searching Assets (Host List Detections) by IP ' +
+        'Address and QID.  If checked, this option will make it so other entity types that ' +
+        'obtain results from the KnowledgeBase, search those results QIDs automatically ' +
+        'in the Asset Lists.  (NOTE: this will increase query times and load more times ' +
+        'for KnowledgeBase pagination)',
+      default: false,
+      type: 'boolean',
+      userCanEdit: true,
+      adminOnly: false
     }
   ]
 };

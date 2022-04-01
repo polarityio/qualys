@@ -1,4 +1,4 @@
-const { size, map, flow, get } = require('lodash/fp');
+const { size, map, flow, get, findIndex, split, last, trim, add } = require('lodash/fp');
 const { parseErrorToReadableJSON } = require('./dataTransformations');
 const queryKnowledgeBase = require('./querying/queryKnowledgeBase');
 const queryHostDetectionListForAllEntities = require('./querying/queryHostDetectionListForAllEntities');
@@ -10,9 +10,11 @@ const {
 } = require('./constants');
 
 const getDisplayResults = require('./getDisplayResults');
+const { includes, parseInt } = require('lodash');
 
 const loadMoreKnowledgeBaseRecords = async (
-  { entity, knowledgeBasePage },
+  { entity, knowledgeBasePage, summary },
+  { shouldDeepSearchForAssets },
   getKnex,
   requestWithDefaults,
   callback,
@@ -35,27 +37,48 @@ const loadMoreKnowledgeBaseRecords = async (
 
     const config = require('../config/config');
 
-    const knowledgeBaseDetections = await queryHostDetectionListForAllEntities(
-      map(
-        flow(get('qid'), (qid) => ({ type: 'qid', value: qid })),
-        knowledgeBaseRecords
-      ),
-      config,
-      requestWithDefaults,
-      Logger
-    );
+    let knowledgeBaseDetectionsDisplayResults, newSummaryTags;
+    if (shouldDeepSearchForAssets) {
+      const knowledgeBaseDetections = await queryHostDetectionListForAllEntities(
+        map(
+          flow(get('qid'), (qid) => ({ type: 'qid', value: qid })),
+          knowledgeBaseRecords
+        ),
+        config,
+        requestWithDefaults,
+        Logger
+      );
 
-    const knowledgeBaseDetectionsDisplayResults = getDisplayResults(
-      HOST_DETECTION_DISPLAY_FORMAT,
-      knowledgeBaseDetections
-    );
-
+      knowledgeBaseDetectionsDisplayResults = getDisplayResults(
+        HOST_DETECTION_DISPLAY_FORMAT,
+        knowledgeBaseDetections
+      );
+      if (size(knowledgeBaseDetections)) {
+        const summaryTagIndex = findIndex(includes('Host Detections'), summary);
+        if (summaryTagIndex !== -1) {
+          const newCount = flow(
+            get(summaryTagIndex),
+            split(':'),
+            last,
+            trim,
+            parseInt,
+            add(size(knowledgeBaseDetections))
+          )(summary);
+          newSummaryTags = summary.map((tag, index) => index === summaryTagIndex ? `Host Detections: ${newCount}` : tag)
+        } else {
+          newSummaryTags = summary.concat(
+            `Host Detections: ${size(knowledgeBaseDetections)}`
+          );
+        }
+      }
+    }
     callback(null, {
       knowledgeBaseRecords: knowledgeBaseRecordsDisplayResults,
       hostDetections: knowledgeBaseDetectionsDisplayResults,
       showLoadMoreKnowledgeBaseRecords:
         size(knowledgeBaseRecords) % KNOWLEDGE_BASE_QUERY_PAGE_LIMIT === 0,
-      knowledgeBaseRecordCount: size(knowledgeBaseRecords)
+      knowledgeBaseRecordCount: size(knowledgeBaseRecords),
+      newSummaryTags
     });
   } catch (error) {
     const err = parseErrorToReadableJSON(error);

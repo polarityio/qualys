@@ -10,14 +10,21 @@ const queryKnowledgeBase = require('./querying/queryKnowledgeBase');
 const associateDataWithEntities = require('./associateDataWithEntities');
 const { TABLE_NAME } = require('./constants');
 
-const getLookupResults = async (entities, config, knex, requestWithDefaults, Logger) => {
+const getLookupResults = async (
+  entities,
+  options,
+  config,
+  knex,
+  requestWithDefaults,
+  Logger
+) => {
   const entitiesWithCustomTypesSpecified = map(({ type, types, value, ...entity }) => {
     type = type === 'custom' ? flow(first, split('.'), last)(types) : type;
 
     return {
       ...entity,
       type,
-      value: type === 'qid' ? flow(split(':'), last, trim) (value): value
+      value: type === 'qid' ? flow(split(':'), last, trim)(value) : value
     };
   }, entities);
 
@@ -27,6 +34,7 @@ const getLookupResults = async (entities, config, knex, requestWithDefaults, Log
 
   const data = await getData(
     entitiesPartition,
+    options,
     config,
     knex,
     requestWithDefaults,
@@ -40,7 +48,14 @@ const getLookupResults = async (entities, config, knex, requestWithDefaults, Log
   return lookupResults.concat(ignoredIpLookupResults);
 };
 
-const getData = async (entitiesPartition, config, knex, requestWithDefaults, Logger) => {
+const getData = async (
+  entitiesPartition,
+  { shouldDeepSearchForAssets },
+  config,
+  knex,
+  requestWithDefaults,
+  Logger
+) => {
   let knexIsLoaded;
   try {
     knexIsLoaded = knex && (await knex.raw(`SELECT COUNT(*) FROM ${TABLE_NAME}`));
@@ -58,21 +73,25 @@ const getData = async (entitiesPartition, config, knex, requestWithDefaults, Log
       : async () => []
   ]);
 
-  const knowledgeBaseDetections = await queryHostDetectionListForAllEntities(
-    map(
-      flow(get('qid'), (qid) => ({ type: 'qid', value: qid })),
-      allFoundKnowledgeBaseRecords
-    ),
-    config,
-    requestWithDefaults,
-    Logger
-  );
+
+  let knowledgeBaseDetections = [];
+  if (shouldDeepSearchForAssets) {
+    knowledgeBaseDetections = await queryHostDetectionListForAllEntities(
+      map(
+        flow(get('qid'), (qid) => ({ type: 'qid', value: qid })),
+        allFoundKnowledgeBaseRecords
+      ),
+      config,
+      requestWithDefaults,
+      Logger
+    );
+  }
 
   const allHostDetections = flow(
     concat(knowledgeBaseDetections),
     uniqBy('id')
   )(initialHostDetections);
-  
+
   Logger.trace({ allHostDetections, allFoundKnowledgeBaseRecords });
 
   return { allHostDetections, allFoundKnowledgeBaseRecords };

@@ -23,6 +23,13 @@ Currently, Qualys' KnowledgeBase API is unsearchable, so we are downloading the 
 > ***NOTE:*** The KnowledgeBase Download/Refresh process and the KnowledgeBase Lookups have only been tested on a Qualys instance with around 250MB of KnowledgeBase Data and took approximately 15 minutes to finish.  Some KnowledgeBase instances could be 100GB+ which could severely hinder the KnowledgeBase Download/Refresh process time and the KnowledgeBase Lookup times.  If this is causing you issues, please let us know at support@polarity.io.  If you wish to only query the Host Detections List with IP Addresses, set the `disableKnowledgeBase` property in the `./config/config.js` file to `true` and restart your integration.
 
 ## Qualys Integration Config Options
+### Deep Search For Assets (Host List Detections)
+Currently, Qualys only allows for searching Assets (Host List Detections) by IP
+Address and QID.  If checked, this option will make it so other entity types that
+obtain results from the KnowledgeBase, search those results QIDs automatically
+in the Asset Lists.  (NOTE: this will increase query times and load more times
+for KnowledgeBase pagination)
+
 > ***NOTE:*** In order for this integration to function, you must set the `url`, `username`, `password`, and `dataRefreshTime` properties in the `./config/config.js` file, and restart this Integration.  Any updates to these properties will also require a restart of the Integration.
 
 ### Qualys URL

@@ -80,6 +80,7 @@ const doLookup = async (entities, options, cb) => {
 
     lookupResults = await getLookupResults(
       entities,
+      options,
       config,
       knex,
       requestWithDefaults,
@@ -108,7 +109,7 @@ const getOnMessage = {
 };
 
 const onMessage = ({ action, data: actionParams }, options, callback) =>
-  getOnMessage[action](actionParams, getKnex, requestWithDefaults, callback, Logger);
+  getOnMessage[action](actionParams, options, getKnex, requestWithDefaults, callback, Logger);
 
 const validateOptions = async (options, callback) => {
   if (!options.configOptionsHaveBeenSet.value) {
