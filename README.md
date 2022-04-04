@@ -1,29 +1,50 @@
 # Polarity Qualys Integration
-![image](https://img.shields.io/badge/status-beta-green.svg)
-
-The Qualys Cloud Platform helps businesses simplify security operations and lower the cost of compliance by delivering critical security intelligence on demand and automating the full spectrum of auditing, compliance and protection for IT systems and web applications.  The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, Domains, CVEs and QIDs.
-
+ The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, Domains, CVEs and QIDs. The Host Detections list will only get queried when searching for IP Addresses and QIDs, the host detection API does not enable other searching at this time. The Qualys KnowledgeBase will be queried for all Polarity entity types. Please see information below about how the KnowledgeBase queries work. 
 > *NOTE:* QIDs can be searched onDemand by prefixing the QID with `QID: <your_qid>`
 
+
+### How to Review Polarity - Qualys Integration 
+***Host Detections***
+* **Summary View** -> Number of Host Dections associated with QID or IP Address 
+* **Detail View**
+    * *Host Information*
+        * Asset ID -> Asset ID from Qualys
+        * Operating System -> Host OS
+        * DNS -> Host DNS/Domain
+        * Last Scan Information
+    * *Detections List*
+        * List of all detections associated with Host
+
+***Knowledge Base Information***
+* **Summary View** -> Number of Host Dections associated with CVEs, Number of KB Records
+* **Detail View**
+    * *Host Infromation*
+        * Asset ID -> Asset ID from Qualys
+        * Operating System -> Host OS
+        * DNS -> Host DNS/Domain
+        * Last Scan Information
+    * *Knowledge Base Records*
+        * Severity of the record
+        * Record Category
+        * Patch Avilabilty
+        * Associated CVEs
+        * Vendor Information
+
 <div style="display:flex; align-items: flex-start;">
-  <img width="370" alt="Integration Example" src="./assets/hostDetections.png">
+  <img width="370" style="margin-right: 7px" alt="Integration Example" src="./assets/hostDetections.png">
   <img width="370" alt="Integration Example" src="./assets/knowledgeBase.png">
 </div>
 
+## About Qualys 
+The Qualys Cloud Platform helps businesses simplify security operations and lower the cost of compliance by delivering critical security intelligence on demand and automating the full spectrum of auditing, compliance and protection for IT systems and web applications. 
 To learn more about Qualys, visit the [official website](https://www.qualys.com/).
-
-
 ## Integration Limitations
 ### Host Detection List Lookup Limits
 Qualys' Host Detection List API only allows lookups on IP Addresses and QIDs, so only IP Addresses and QIDs will show Host Detection List results.
-
 ### KnowledgeBase Limits
 Currently, Qualys' KnowledgeBase API is unsearchable, so we are downloading the entire KnowledgeBase on your Polarity Server and doing lookups locally so you can access your Qualys KnowledgeBase Data.  This download process is run on Integration Restart and when saving User Options, as well as refreshes every night at midnight.  The refresh process will take some time, and during the initial download process you will not be able to obtain results from the KnowledgeBase, but can search the Host Detections List. 
-
 1. > ***NOTE:*** If you wish to use the KnowledgeBase in this integration, you must set the `disableKnowledgeBase` property in the `./config/config.js` file to `false` and restart your integration, as it is `true` by default.
-
 2. > ***NOTE:*** The KnowledgeBase Download/Refresh process and the KnowledgeBase Lookups have only been tested on a Qualys instance with around 250MB of KnowledgeBase Data and took approximately 15 minutes to finish.  Some KnowledgeBase instances could be 100GB+ which could severely hinder the KnowledgeBase Download/Refresh process time and the KnowledgeBase Lookup times.  If this is causing you issues, please let us know at support@polarity.io.  If you wish to only query the Host Detections List with IP Addresses, set the `disableKnowledgeBase` property in the `./config/config.js` file to `true` and restart your integration.
-
 ## Qualys Integration Config Options
 ### Deep Search For Assets (Host List Detections)
 Currently, Qualys only allows for searching Assets (Host List Detections) by IP
@@ -31,18 +52,13 @@ Address and QID.  If checked, this option will make it so other entity types tha
 obtain results from the KnowledgeBase, search those results QIDs automatically
 in the Asset Lists.  (NOTE: this will increase query times and load more times
 for KnowledgeBase pagination)
-
 > ***NOTE:*** In order for this integration to function, you must set the `url`, `username`, `password`, and `dataRefreshTime` properties in the `./config/config.js` file, and restart this Integration.  Any updates to these properties will also require a restart of the Integration.
-
 ### Qualys URL
 The URL of the Qualys you would like to connect to (including http:// or https://)
-
 ### Qualys Username
 The Username for your Qualys Account
-
 ### Qualys Password
 The Password associated with the Qualys Account
-
 ### KnowledgeBase Refresh Time
 How often/when to refresh the local data source with the up to date data from the Qualys KnowledgeBase API.  This is outline in Cron Format and is defaulted to the first of every month at midnight UTC. If you would like to never update your database after the initial install, set this string to `never-update`.  Helpful Resources: https://crontab.guru/ .
 ```
@@ -59,15 +75,8 @@ How often/when to refresh the local data source with the up to date data from th
 '0 0 1 * *' -> Execute at 00:00 on day-of-month 1 (current default).
 'never-update' -> Never Update after initial install of the database
 ```
-
-
 ## Installation Instructions
-
 Installation instructions for integrations are provided on the [PolarityIO GitHub Page](https://polarityio.github.io/).
-
-
 ## Polarity
-
 Polarity is a memory-augmentation platform that improves and accelerates analyst decision making.  For more information about the Polarity platform please see:
-
 https://polarity.io/
