@@ -31,8 +31,8 @@
         * Vendor Information
 
 <div style="display:flex; align-items: flex-start;">
-  <img width="370" style="margin-right: 7px" alt="Host List Detections" src="./assets/Host List Detections.png">
-  <img width="383" alt="KnowledgeBase Record" src="./assets/KnowledgeBase Record.png">
+  <img width="370" style="margin-right: 7px" title="Host List Detections" alt="Host List Detections" src="./assets/Host List Detections.png">
+  <img width="383" title="KnowledgeBase Record" alt="KnowledgeBase Record" src="./assets/KnowledgeBase Record.png">
 </div>
 
 ## About Qualys 
