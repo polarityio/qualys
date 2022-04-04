@@ -1,12 +1,21 @@
 {
   "main": "./integration.js",
-  "name": "__TODO__",
+  "name": "qualys",
   "version": "3.0.0-beta",
   "private": true,
   "license": "MIT",
   "author": "Polarity",
+  "scripts": {
+    "reset-database": "rm -rf ./data"
+  },
   "dependencies": {
-    "lodash": "^4.17.15",
-    "postman-request": "*"
+    "knex": "^0.95.6",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.1",
+    "node-pre-gyp": "^0.17.0",
+    "node-schedule": "^2.0.0",
+    "postman-request": "*",
+    "sqlite3": "^4.2.0",
+    "xml2js": "^0.4.23"
   }
 }

@@ -32,3 +32,5 @@ node_modules/
 test-runner.js
 
 .polarity.conf
+
+data/

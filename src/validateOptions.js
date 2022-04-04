@@ -1,41 +1,26 @@
 const fp = require('lodash/fp');
 const reduce = require('lodash/fp/reduce').convert({ cap: false });
 
-const validateOptions = (options, callback) => {
-  const stringOptionsErrorMessages = {
-    //TODO
-  };
 
-  const stringValidationErrors = _validateStringOptions(
-    stringOptionsErrorMessages,
-    options
-  );
-  
-  const urlValidationErrors = _validateUrlOption(options.url);
-
-  
-  callback(null, stringValidationErrors.concat(urlValidationErrors));
-};
-
-const _validateStringOptions = (stringOptionsErrorMessages, options, otherErrors = []) =>
-  reduce((agg, message, optionName) => {
-    const isString = typeof options[optionName].value === 'string';
-    const isEmptyString = isString && fp.isEmpty(options[optionName].value);
+const validateStringOptions = (stringOptionsErrorMessages, config, otherErrors = []) =>
+  reduce((agg, message, configKey) => {
+    const isString = typeof config[configKey] === 'string';
+    const isEmptyString = isString && fp.isEmpty(config[configKey]);
 
     return !isString || isEmptyString
       ? agg.concat({
-          key: optionName,
+          key: 'configOptionsHaveBeenSet',
           message
         })
       : agg;
   }, otherErrors)(stringOptionsErrorMessages);
 
-const _validateUrlOption = ({ value: url }, otherErrors = []) => {
+const validateUrlOption = (url, otherErrors = []) => {
   const endWithError =
-    url && url.endsWith('//')
+    url && url.endsWith('/')
       ? otherErrors.concat({
-          key: 'url',
-          message: 'Your Url must not end with a //'
+          key: 'configOptionsHaveBeenSet',
+          message: 'Your `url` property in the `./config/config.js` file must not end with a /'
         })
       : otherErrors;
   if (endWithError.length) return endWithError;
@@ -45,9 +30,9 @@ const _validateUrlOption = ({ value: url }, otherErrors = []) => {
       new URL(url);
     } catch (_) {
       return otherErrors.concat({
-        key: 'url',
+        key: 'configOptionsHaveBeenSet',
         message:
-          'What is currently provided is not a valid URL. You must provide a valid ServiceNow Instance URL.'
+          'What is currently provided in the `url` property is not a valid URL. You must provide a valid URL.'
       });
     }
   }
@@ -55,4 +40,5 @@ const _validateUrlOption = ({ value: url }, otherErrors = []) => {
   return otherErrors;
 };
 
-module.exports = validateOptions;
+
+module.exports = { validateStringOptions, validateUrlOption };

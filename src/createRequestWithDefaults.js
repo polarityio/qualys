@@ -1,6 +1,8 @@
 const fs = require('fs');
+const { identity, omit } = require('lodash/fp');
 const request = require('postman-request');
 const config = require('../config/config');
+const { parseErrorToReadableJSON } = require('./dataTransformations');
 
 const SUCCESSFUL_ROUNDED_REQUEST_STATUS_CODES = [200];
 
@@ -64,17 +66,24 @@ const createRequestWithDefaults = (Logger) => {
     };
   };
 
-  const handleAuth = async ({ options, ...requestOptions }) => ({
+  const handleAuth = async ({ config, ...requestOptions }) => ({
     ...requestOptions,
-    //TODO: add auth
+    auth: {
+      username: config.username,
+      password: config.password,
+    }
   });
 
   const checkForStatusError = ({ statusCode, body }, requestOptions) => {
-    Logger.trace({
-      requestOptions: { ...requestOptions, auth: 'Not Logging It!' },
-      statusCode,
-      body
-    });
+    // Logger.trace({
+    //   requestOptions: {
+    //     ...requestOptions,
+    //     auth: '************',
+    //     config: '************'
+    //   },
+    //   statusCode,
+    //   body
+    // });
 
     const roundedStatus = Math.round(statusCode / 100) * 100;
     if (!SUCCESSFUL_ROUNDED_REQUEST_STATUS_CODES.includes(roundedStatus)) {
@@ -86,7 +95,19 @@ const createRequestWithDefaults = (Logger) => {
     }
   };
 
-  const requestDefaultsWithInterceptors = requestWithDefaults(handleAuth);
+  const requestDefaultsWithInterceptors = requestWithDefaults(handleAuth, identity, (error) => {
+    const err = parseErrorToReadableJSON(error);
+    if (err.requestOptions && ['{', '['].includes(err.requestOptions[0]))
+      err.requestOptions = omit(['config', 'auth'], JSON.parse(err.requestOptions));
+      
+    Logger.error({ err });
+    let newError  = new Error(err.message)
+    newError.status = err.status;
+    newError.requestOptions = JSON.stringify(err.requestOptions);
+    newError.description = err.description;
+    newError.stack = err.stack;
+    throw newError;
+  });
 
   return requestDefaultsWithInterceptors;
 };
