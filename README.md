@@ -2,6 +2,7 @@
  The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, Domains, CVEs and QIDs. The Host Detections list will only get queried when searching for IP Addresses and QIDs, the host detection API does not enable other searching at this time. The Qualys KnowledgeBase will be queried for all Polarity entity types. Please see information below about how the KnowledgeBase queries work. 
 > *NOTE:* QIDs can be searched onDemand by prefixing the QID with `QID: <your_qid>`
 
+### > ***Important***: **When installing `NPM` dependencies, please install using the command `npm run remote-install` instead of the typical `npm install`.**
 
 ### How to Review Polarity - Qualys Integration 
 ***Host Detections***
