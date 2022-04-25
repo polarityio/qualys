@@ -14,13 +14,13 @@ const { millisToHoursMinutesAndSeconds, parseErrorToReadableJSON } = require('..
 const getAndInsertKnowledgeBaseRecords = require('./getAndInsertKnowledgeBaseRecords');
 const { TABLE_NAME } = require('../constants');
 
-const knowledgeBaseIntoDb = (knex, config, requestWithDefaults, Logger) => async () => {
+const knowledgeBaseIntoDb = (knex, _options, requestWithDefaults, Logger) => async () => {
   try {
-    const requiredOptionsAreMissing = flow(
-      map(get(__, config)),
-      some(negate(identity))
-    )(['url', 'username', 'password']);
-    if (requiredOptionsAreMissing || !knex) return;
+    const options = {
+      url: get('url.value', _options) || _options.url,
+      username: get('username.value', _options) || _options.username,
+      password: get('password.value', _options) || _options.password
+    };
 
     Logger.info(`Started getting Records from Qualys KnowledgeBase`);
 
@@ -29,7 +29,7 @@ const knowledgeBaseIntoDb = (knex, config, requestWithDefaults, Logger) => async
     await createSchema(knex, Logger);
     Logger.info(`Database Created`);
 
-    await getAndInsertKnowledgeBaseRecords(knex, config, requestWithDefaults, Logger);
+    await getAndInsertKnowledgeBaseRecords(knex, options, requestWithDefaults, Logger);
     Logger.info(`Database Data Obtained`);
 
     await cleanUpTempTable(knex, Logger);

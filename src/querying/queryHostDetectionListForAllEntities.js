@@ -22,20 +22,20 @@ const {
 
 const queryHostDetectionListForAllEntities = async (
   entities,
-  config,
+  options,
   requestWithDefaults,
   Logger
 ) => {
   const allHostDetectionResultForIpAddresses = await flow(
     filter(flow(get('type'), or(eq('IPv4'), eq('IPv6')))),
     map(get('value')),
-    cond([[size, queryHostDetectionList('ips', config, requestWithDefaults, Logger)]])
+    cond([[size, queryHostDetectionList('ips', options, requestWithDefaults, Logger)]])
   )(entities);
 
   const allHostDetectionResultForQids = await flow(
     filter(flow(get('type'), eq('qid'))),
     map(get('value')),
-    cond([[size, queryHostDetectionList('qids', config, requestWithDefaults, Logger)]])
+    cond([[size, queryHostDetectionList('qids', options, requestWithDefaults, Logger)]])
   )(entities);
 
   return uniqBy('id', allHostDetectionResultForIpAddresses).concat(
@@ -44,14 +44,14 @@ const queryHostDetectionListForAllEntities = async (
 };
 
 const queryHostDetectionList =
-  (type, config, requestWithDefaults, Logger) => async (entityValues) => {
+  (type, options, requestWithDefaults, Logger) => async (entityValues) => {
     try {
       const responseXml = getOr(
         '',
         'body',
         await requestWithDefaults({
           method: 'GET',
-          url: `${config.url}/api/2.0/fo/asset/host/vm/detection/`,
+          url: `${options.url}/api/2.0/fo/asset/host/vm/detection/`,
           qs: {
             action: 'list',
             [type]: join(',', entityValues),
@@ -59,7 +59,7 @@ const queryHostDetectionList =
             show_results: 1
           },
           headers: { 'X-Requested-With': 'Polarity' },
-          config
+          options
         })
       );
 

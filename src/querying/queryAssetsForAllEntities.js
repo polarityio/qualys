@@ -14,7 +14,7 @@ const limit = 200;
 
 const queryAssetsForAllEntities = async (
   entities,
-  config,
+  options,
   requestWithDefaults,
   Logger,
   offset = 0,
@@ -27,7 +27,7 @@ const queryAssetsForAllEntities = async (
       [],
       'body',
       await requestWithDefaults({
-        uri: `${config.url}/portal-front/rest/assetview/1.0/assets`,
+        uri: `${options.url}/portal-front/rest/assetview/1.0/assets`,
         qs: {
           havingQuery: assetQuery,
           fields: ASSET_QUERY_FIELDS,
@@ -36,7 +36,7 @@ const queryAssetsForAllEntities = async (
           limit,
           offset
         },
-        config
+        options
       })
     );
 

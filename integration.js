@@ -16,72 +16,21 @@ let job;
 let knex;
 let requestWithDefaults;
 
-const getKnex = async () => {
-  try {
-    const knex = await require('knex')({
-      client: 'sqlite3',
-      connection: {
-        filename: DATABASE_PATH
-      },
-      useNullAsDefault: true
-    });
-
-    await knex.raw(`SELECT COUNT(*) FROM ${TABLE_NAME}`);
-    return knex;
-  } catch (e) {}
-};
-
 const startup = async (logger) => {
   Logger = logger;
   requestWithDefaults = createRequestWithDefaults(Logger);
-  const config = require('./config/config');
-
-  if (!config.disableKnowledgeBase) {
-    try {
-      if (!fs.existsSync(DATABASE_PATH)) {
-        fs.mkdirSync('./data', { recursive: true });
-        fs.writeFileSync(DATABASE_PATH, '');
-      }
-
-      knex = await require('knex')({
-        client: 'sqlite3',
-        connection: {
-          filename: DATABASE_PATH
-        },
-        useNullAsDefault: true
-      });
-      if (job) job.cancel();
-
-      knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)();
-      if (config.dataRefreshTime !== 'never-update') {
-        if (job) job.cancel();
-
-        job = schedule.scheduleJob(
-          config.dataRefreshTime,
-          knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)
-        );
-      }
-    } catch (error) {
-      const err = parseErrorToReadableJSON(error);
-      Logger.error({ error, formattedError: err }, 'Error on Startup');
-      throw error;
-    }
-  }
 };
 
 const doLookup = async (entities, options, cb) => {
   Logger.debug({ entities }, 'Entities');
 
-  const config = require('./config/config');
-
   let lookupResults = [];
   try {
-    if (!config.disableKnowledgeBase && !knex) knex = await getKnex();
+    if (!options.disableKnowledgeBase && !knex) knex = await getKnex();
 
     lookupResults = await getLookupResults(
       entities,
       options,
-      config,
       knex,
       requestWithDefaults,
       Logger
@@ -104,49 +53,66 @@ const doLookup = async (entities, options, cb) => {
   cb(null, lookupResults);
 };
 
+const getKnex = async () => {
+  try {
+    if (!fs.existsSync(DATABASE_PATH)) {
+      fs.mkdirSync('./data', { recursive: true });
+      fs.writeFileSync(DATABASE_PATH, '');
+    }
+    const knex = await require('knex')({
+      client: 'sqlite3',
+      connection: {
+        filename: DATABASE_PATH
+      },
+      useNullAsDefault: true
+    });
+
+    if (await knex.schema.hasTable(TABLE_NAME))
+      await knex.raw(`SELECT COUNT(*) FROM ${TABLE_NAME}`);
+
+    return knex;
+  } catch (e) {
+    const err = parseErrorToReadableJSON(e);
+    Logger.trace({ MESSAGE: 'Failed to connect to Database', err });
+  }
+};
+
 const getOnMessage = {
   loadMoreKnowledgeBaseRecords
 };
 
 const onMessage = ({ action, data: actionParams }, options, callback) =>
-  getOnMessage[action](actionParams, options, getKnex, requestWithDefaults, callback, Logger);
+  getOnMessage[action](
+    actionParams,
+    options,
+    getKnex,
+    requestWithDefaults,
+    callback,
+    Logger
+  );
 
 const validateOptions = async (options, callback) => {
-  if (!options.configOptionsHaveBeenSet.value) {
-    return callback(null, [
-      {
-        key: 'configOptionsHaveBeenSet',
-        message: 'This option must be checked for this integration to function properly.'
-      }
-    ]);
-  }
-
-  const config = require('./config/config');
-
   const stringOptionsErrorMessages = {
-    url: 'You must set a valid Qualys URL to the `url` property in `./config/config.js`',
-    username:
-      'You must set a valid Qualys Username to the `username` property in `./config/config.js`',
-    password:
-      'You must set a valid Qualys Password  to the`password` property in `./config/config.js`',
-    dataRefreshTime:
-      'You must set a valid KnowledgeBase Refresh Time to the `dataRefreshTime` property in `./config/config.js`'
+    url: 'You must provide a valid Qualys URL.',
+    username: 'You must provide a valid Qualys Username',
+    password: 'You must provide a valid Qualys Password',
+    dataRefreshTime: 'You must provide a valid KnowledgeBase Refresh Time'
   };
 
   const stringValidationErrors = validateStringOptions(
     stringOptionsErrorMessages,
-    config
+    options
   );
 
-  const urlValidationErrors = validateUrlOption(config.url);
+  const urlValidationErrors = validateUrlOption(options.url.value);
 
-  const dataRefreshTime = get('dataRefreshTime', config);
+  const dataRefreshTime = get('dataRefreshTime.value', options);
   const cronExpressionRegex =
     /(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7})/;
   const dataRefreshTimeError = cronExpressionRegex.test(dataRefreshTime)
     ? []
     : {
-        key: 'configOptionsHaveBeenSet',
+        key: 'dataRefreshTime',
         message:
           'Your KnowledgeBase Refresh Time is formatted incorrectly. Try using https://crontab.guru/ for help.'
       };
@@ -155,30 +121,24 @@ const validateOptions = async (options, callback) => {
     .concat(urlValidationErrors)
     .concat(dataRefreshTimeError);
 
-  if (!errors.length) {
-    if (job) job.cancel();
-    validateOptionsStartedJob = true;
+  if (!(errors.length || get('disableKnowledgeBase.value', options))) {
+    Logger.info(`Refresh Data Time set to ${dataRefreshTime}`);
+    try {
+      if (!knex) knex = await getKnex();
 
-    Logger.info(`Refresh Data Time set to ${dataRefreshTime} hours`);
+      knowledgeBaseIntoDb(knex, options, requestWithDefaults, Logger)();
 
-    if (!config.disableKnowledgeBase) {
-      try {
-        if (!knex) knex = await getKnex();
+      if (dataRefreshTime !== 'never-update') {
+        if (job) job.cancel();
 
-        knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)();
-
-        if (dataRefreshTime !== 'never-update') {
-          if (job) job.cancel();
-
-          job = schedule.scheduleJob(
-            dataRefreshTime,
-            knowledgeBaseIntoDb(knex, config, requestWithDefaults, Logger)
-          );
-        }
-      } catch (error) {
-        const err = parseErrorToReadableJSON(error);
-        Logger.error({ error, formattedError: err }, 'knowledgeBaseIntoDb Failed');
+        job = schedule.scheduleJob(
+          dataRefreshTime,
+          knowledgeBaseIntoDb(knex, options, requestWithDefaults, Logger)
+        );
       }
+    } catch (error) {
+      const err = parseErrorToReadableJSON(error);
+      Logger.error({ error, formattedError: err }, 'knowledgeBaseIntoDb Failed');
     }
   }
 

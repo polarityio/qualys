@@ -2,14 +2,14 @@ const fp = require('lodash/fp');
 const reduce = require('lodash/fp/reduce').convert({ cap: false });
 
 
-const validateStringOptions = (stringOptionsErrorMessages, config, otherErrors = []) =>
-  reduce((agg, message, configKey) => {
-    const isString = typeof config[configKey] === 'string';
-    const isEmptyString = isString && fp.isEmpty(config[configKey]);
+const validateStringOptions = (stringOptionsErrorMessages, options, otherErrors = []) =>
+  reduce((agg, message, optionName) => {
+    const isString = typeof options[optionName].value === 'string';
+    const isEmptyString = isString && fp.isEmpty(options[optionName].value);
 
     return !isString || isEmptyString
       ? agg.concat({
-          key: 'configOptionsHaveBeenSet',
+          key: optionName,
           message
         })
       : agg;
@@ -19,8 +19,9 @@ const validateUrlOption = (url, otherErrors = []) => {
   const endWithError =
     url && url.endsWith('/')
       ? otherErrors.concat({
-          key: 'configOptionsHaveBeenSet',
-          message: 'Your `url` property in the `./config/config.js` file must not end with a /'
+          key: 'url',
+          message:
+            'Your URL must not end with a /'
         })
       : otherErrors;
   if (endWithError.length) return endWithError;
@@ -30,9 +31,9 @@ const validateUrlOption = (url, otherErrors = []) => {
       new URL(url);
     } catch (_) {
       return otherErrors.concat({
-        key: 'configOptionsHaveBeenSet',
+        key: 'url',
         message:
-          'What is currently provided in the `url` property is not a valid URL. You must provide a valid URL.'
+          'This URL is invalid. You must provide a valid URL.'
       });
     }
   }
