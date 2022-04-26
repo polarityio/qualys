@@ -76,7 +76,7 @@ const HOST_DETECTION_DISPLAY_FORMAT = {
       times_found: 'Times Found',
       first_found_datetime: { label: 'First Found', isDate: true },
       last_found_datetime: { label: 'Last Found', isDate: true },
-      last_test_datetime: { label: 'Last tested', isDate: true },
+      last_test_datetime: { label: 'Last Tested', isDate: true },
       last_update_datetime: { label: 'Last Updated', isDate: true },
       last_processed_datetime: { label: 'Last Processed', isDate: true }
     }

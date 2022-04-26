@@ -26,7 +26,7 @@ const MAX_QID_TO_LOOK_AHEAD = 250000;
 
 const getAndInsertKnowledgeBaseRecords = async (
   knex,
-  config,
+  options,
   requestWithDefaults,
   Logger
 ) => {
@@ -35,7 +35,7 @@ const getAndInsertKnowledgeBaseRecords = async (
   while (numberOfEmptyPagesSkipped * QID_PAGE_SIZE <= MAX_QID_TO_LOOK_AHEAD) {
     batchMetaData = await getAndInsertKnowledgeBaseRecordsBatch(
       knex,
-      config,
+      options,
       requestWithDefaults,
       Logger,
       id_max,
@@ -47,7 +47,7 @@ const getAndInsertKnowledgeBaseRecords = async (
 };
 const getAndInsertKnowledgeBaseRecordsBatch = async (
   knex,
-  config,
+  options,
   requestWithDefaults,
   Logger,
   id_max,
@@ -59,7 +59,7 @@ const getAndInsertKnowledgeBaseRecordsBatch = async (
       'body',
       await requestWithDefaults({
         method: 'POST',
-        url: `${config.url}//api/2.0/fo/knowledge_base/vuln/`,
+        url: `${options.url}//api/2.0/fo/knowledge_base/vuln/`,
         qs: {
           action: 'list',
           details: 'All',
@@ -68,7 +68,7 @@ const getAndInsertKnowledgeBaseRecordsBatch = async (
           show_supported_modules_info: 1
         },
         headers: { 'X-Requested-With': 'Polarity' },
-        config
+        options
       })
     );
 
@@ -83,12 +83,6 @@ const getAndInsertKnowledgeBaseRecordsBatch = async (
     );
 
     await knex.batchInsert(TEMP_TABLE_NAME, recordsFormattedForDatabase, 50);
-
-    const recordCount = flow(
-      first,
-      values,
-      first
-    )(await knex.raw(`SELECT COUNT(*) FROM ${TEMP_TABLE_NAME}`));
 
     return {
       id_max: id_max + QID_PAGE_SIZE,

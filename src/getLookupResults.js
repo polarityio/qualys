@@ -13,7 +13,6 @@ const { TABLE_NAME } = require('./constants');
 const getLookupResults = async (
   entities,
   options,
-  config,
   knex,
   requestWithDefaults,
   Logger
@@ -35,7 +34,6 @@ const getLookupResults = async (
   const data = await getData(
     entitiesPartition,
     options,
-    config,
     knex,
     requestWithDefaults,
     Logger
@@ -50,8 +48,7 @@ const getLookupResults = async (
 
 const getData = async (
   entitiesPartition,
-  { shouldDeepSearchForAssets },
-  config,
+  options,
   knex,
   requestWithDefaults,
   Logger
@@ -64,24 +61,24 @@ const getData = async (
   const [initialHostDetections, allFoundKnowledgeBaseRecords] = await Promise.all([
     queryHostDetectionListForAllEntities(
       entitiesPartition,
-      config,
+      options,
       requestWithDefaults,
       Logger
     ),
-    !config.disableKnowledgeBase && knexIsLoaded
+    !options.disableKnowledgeBase && knexIsLoaded
       ? queryKnowledgeBase(entitiesPartition, knex, Logger)
       : async () => []
   ]);
 
 
   let knowledgeBaseDetections = [];
-  if (shouldDeepSearchForAssets) {
+  if (options.shouldDeepSearchForAssets) {
     knowledgeBaseDetections = await queryHostDetectionListForAllEntities(
       map(
         flow(get('qid'), (qid) => ({ type: 'qid', value: qid })),
         allFoundKnowledgeBaseRecords
       ),
-      config,
+      options,
       requestWithDefaults,
       Logger
     );

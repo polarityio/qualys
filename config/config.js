@@ -32,56 +32,60 @@ module.exports = {
     level: 'info' //trace, debug, info, warn, error, fatal
   },
 
-  /** CONFIG OPTIONS */
-  /**
-   * Qualys URL:
-   * The URL of the Qualys you would like to connect to (including http:// or https://)
-   */
-  url: '',
-  /**
-   * Qualys Username:
-   * The Username for your Qualys Account
-   */
-  username: '',
-  /**
-   * Qualys Password:
-   * The Password associated with the Qualys Account
-   */
-  password: '',
-  /**
-   * KnowledgeBase Refresh Time:
-   * How often/when to refresh the local data source with the up to date data from
-   * the Qualys KnowledgeBase API.  This is in Cron Format and is defaulted
-   * to every day at midnight UTC. If you would like to never update
-   * your database after the initial install, set this string to `never-update`.
-   * Helpful Resources: https://crontab.guru/ .
-   */
-  // '42 * * * *' -> Execute when the minute is 42 (e.g. 19:42, 20:42, etc.).
-  // '*/5 * * * *' -> Execute every 5th minute
-  // '0 0 1 * *' -> Execute at 00:00 on day-of-month 1.
-  // 'never-update' -> Never Update after initial install of the database
-  dataRefreshTime: '0 0 * * *',
-  /**
-   * Disable KnowledgeBase:
-   * In case of technical issues with the KnowledgeBase Download/Refresh process or time
-   * it takes to run the process, or any issues with the KnowledgeBase Lookup times, please
-   * reach out to support@polarity.io.  If you wish to continue to use the integration and
-   * only use the Host Detections List Query with IP Addresses and QIDs, set this option to true.
-   *
-   * If true, we will no longer query any existing KnowledgeBase resources, and will not
-   * pull down or update any of the KnowledgeBase content locally to be searched.
-   */
-  disableKnowledgeBase: true,
-
   options: [
     {
-      key: 'configOptionsHaveBeenSet',
-      name: 'Config Options Have Been Set',
+      key: 'url',
+      name: 'Qualys URL',
       description:
-        'In order for this integration to function, you must set the `url`, `username`, ' +
-        '`password`, and `dataRefreshTime` properties in the `./config/config.js` file, ' +
-        'and restart this Integration.  Any updates to these properties will also require a restart of the Integration.',
-      default: false,
+        'The URL of the Qualys you would like to connect to (including http:// or https://)',
+      default: '',
+      type: 'text',
+      userCanEdit: false,
+      adminOnly: true
+    },
+    {
+      key: 'username',
+      name: 'Qualys Username',
+      description: 'The Username for your Qualys Account',
+      default: '',
+      type: 'text',
+      userCanEdit: false,
+      adminOnly: true
+    },
+    {
+      key: 'password',
+      name: 'Qualys Password',
+      description: 'The Password associated with the Qualys Account',
+      default: '',
+      type: 'password',
+      userCanEdit: false,
+      adminOnly: true
+    },
+    {
+      key: 'dataRefreshTime',
+      name: 'KnowledgeBase Refresh Time',
+      description:
+        'How often/when to refresh the local data source with the up to date data from' +
+        'the Qualys KnowledgeBase API.  This is in Cron Format and is defaulted' +
+        'to every day at midnight UTC. If you would like to never update' +
+        'your database after the initial install, set this string to `never-update`.' +
+        'Helpful Resources: https://crontab.guru/ .',
+      default: '0 0 * * *',
+      type: 'text',
+      userCanEdit: false,
+      adminOnly: true
+    },
+    {
+      key: 'disableKnowledgeBase',
+      name: 'Disable KnowledgeBase',
+      description:
+        'In case of technical issues with the KnowledgeBase Download/Refresh process or time' +
+        'it takes to run the process, or any issues with the KnowledgeBase Lookup times, please' +
+        'reach out to support@polarity.io.  If you wish to continue to use the integration and' +
+        'only use the Host Detections List Query with IP Addresses and QIDs, set this option to true.\n' +
+        'If true, we will no longer query any existing KnowledgeBase resources, and will not' +
+        'pull down or update any of the KnowledgeBase content locally to be searched.',
+      default: true,
       type: 'boolean',
       userCanEdit: false,
       adminOnly: true

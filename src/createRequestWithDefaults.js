@@ -66,24 +66,24 @@ const createRequestWithDefaults = (Logger) => {
     };
   };
 
-  const handleAuth = async ({ config, ...requestOptions }) => ({
+  const handleAuth = async ({ options, ...requestOptions }) => ({
     ...requestOptions,
     auth: {
-      username: config.username,
-      password: config.password,
+      username: options.username,
+      password: options.password,
     }
   });
 
   const checkForStatusError = ({ statusCode, body }, requestOptions) => {
-    // Logger.trace({
-    //   requestOptions: {
-    //     ...requestOptions,
-    //     auth: '************',
-    //     config: '************'
-    //   },
-    //   statusCode,
-    //   body
-    // });
+    Logger.trace({
+      requestOptions: {
+        ...requestOptions,
+        auth: '************',
+        options: '************'
+      },
+      statusCode,
+      body
+    });
 
     const roundedStatus = Math.round(statusCode / 100) * 100;
     if (!SUCCESSFUL_ROUNDED_REQUEST_STATUS_CODES.includes(roundedStatus)) {
@@ -98,7 +98,7 @@ const createRequestWithDefaults = (Logger) => {
   const requestDefaultsWithInterceptors = requestWithDefaults(handleAuth, identity, (error) => {
     const err = parseErrorToReadableJSON(error);
     if (err.requestOptions && ['{', '['].includes(err.requestOptions[0]))
-      err.requestOptions = omit(['config', 'auth'], JSON.parse(err.requestOptions));
+      err.requestOptions = omit(['options', 'auth'], JSON.parse(err.requestOptions));
       
     Logger.error({ err });
     let newError  = new Error(err.message)

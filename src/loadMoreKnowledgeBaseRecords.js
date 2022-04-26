@@ -14,7 +14,7 @@ const { includes, parseInt } = require('lodash');
 
 const loadMoreKnowledgeBaseRecords = async (
   { entity, knowledgeBasePage, summary },
-  { shouldDeepSearchForAssets },
+  options,
   getKnex,
   requestWithDefaults,
   callback,
@@ -35,16 +35,15 @@ const loadMoreKnowledgeBaseRecords = async (
       knowledgeBaseRecords
     );
 
-    const config = require('../config/config');
 
     let knowledgeBaseDetectionsDisplayResults, newSummaryTags;
-    if (shouldDeepSearchForAssets) {
+    if (options.shouldDeepSearchForAssets) {
       const knowledgeBaseDetections = await queryHostDetectionListForAllEntities(
         map(
           flow(get('qid'), (qid) => ({ type: 'qid', value: qid })),
           knowledgeBaseRecords
         ),
-        config,
+        options,
         requestWithDefaults,
         Logger
       );

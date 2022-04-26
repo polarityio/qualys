@@ -13,7 +13,7 @@ const limit = 200;
 
 const queryVulnerabilitiesForAllEntities = async (
   entities,
-  config,
+  options,
   requestWithDefaults,
   Logger,
   offset = 0,
@@ -26,14 +26,14 @@ const queryVulnerabilitiesForAllEntities = async (
       [],
       'body',
       await requestWithDefaults({
-        uri: `${config.url}/portal-front/rest/assetview/1.0/assets`,
+        uri: `${options.url}/portal-front/rest/assetview/1.0/assets`,
         qs: {
           havingQuery: vulnerabilitiesQuery,
           fields: VULNERABILITIES_QUERY_FIELDS,
           limit,
           offset
         },
-        config
+        options
       })
     );
 
@@ -45,7 +45,7 @@ const queryVulnerabilitiesForAllEntities = async (
     if (size(vulnerabilitiesData) === 200) {
       return await queryVulnerabilitiesForAllEntities(
         entities,
-        config,
+        options,
         requestWithDefaults,
         Logger,
         offset + limit,
@@ -59,7 +59,6 @@ const queryVulnerabilitiesForAllEntities = async (
     Logger.error(
       {
         detail: 'Failed to Query Vulnerabilities',
-        config,
         formattedError: err
       },
       'Query Vulnerabilities Failed'
