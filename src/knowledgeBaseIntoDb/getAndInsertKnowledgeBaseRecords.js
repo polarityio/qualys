@@ -75,7 +75,7 @@ const getAndInsertKnowledgeBaseRecordsBatch = async (
     const knowledgeBaseRecords = flow(
       getOr([], 'knowledge_base_vuln_list_output.response.vuln_list.vuln'),
       processPossibleList(false)
-    )(await xmlToJson(responseXml));
+    )(await xmlToJson(responseXml, Logger));
 
     const recordsFormattedForDatabase = map(
       processResultWithProcessingFormat(KNOWLEDGE_BASE_PROCESSING_FORMAT),

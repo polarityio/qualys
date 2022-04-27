@@ -181,14 +181,19 @@ const processPossibleList =
 
 const xml2js = require('xml2js');
 
-const xmlToJson = async (xml) => {
-  const parser = new xml2js.Parser({
-    normalizeTags: true,
-    explicitArray: false,
-    charkey: 'value',
-    attrkey: 'attributes'
-  });
-  return await parser.parseStringPromise(xml);
+const xmlToJson = async (xml, Logger) => {
+  try {
+    const parser = new xml2js.Parser({
+      normalizeTags: true,
+      explicitArray: false,
+      charkey: 'value',
+      attrkey: 'attributes'
+    });
+    return await parser.parseStringPromise(xml);
+  } catch (e) {
+    const err = parseErrorToReadableJSON(e);
+    Logger.error({ MESSAGE: 'Failed to Parse XML', xml, err });
+  }
 };
 
 module.exports = {
