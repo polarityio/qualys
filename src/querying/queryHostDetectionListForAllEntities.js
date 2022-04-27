@@ -66,7 +66,7 @@ const queryHostDetectionList =
       const hostDetections = flow(
         get('host_list_vm_detection_output.response.host_list.host'),
         processPossibleList(false)
-      )(await xmlToJson(responseXml));
+      )(await xmlToJson(responseXml, Logger));
 
       const processedJson = map(
         processResultWithProcessingFormat(HOST_DETECTIONS_LIST_FORMAT),

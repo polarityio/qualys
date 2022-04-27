@@ -1,12 +1,12 @@
 {
   "main": "./integration.js",
   "name": "qualys",
-  "version": "3.0.2-beta",
+  "version": "3.0.3-beta",
   "private": true,
   "license": "MIT",
   "author": "Polarity",
   "scripts": {
-    "remote-install": "VERSION=\"3.0.2-beta\" && wget -c \"https://github.com/polarityio/qualys/releases/download/${VERSION}/qualys-${VERSION}.tgz\" -O - | tar -xz -C /app/polarity-server/integrations/",
+    "remote-install": "VERSION=\"3.0.3-beta\" && wget -c \"https://github.com/polarityio/qualys/releases/download/${VERSION}/qualys-${VERSION}.tgz\" -O - | tar -xz -C /app/polarity-server/integrations/",
     "reset-database": "rm -rf ./data"
   },
   "dependencies": {
