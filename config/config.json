@@ -14,6 +14,7 @@
       "regex": "(?:QID|qid):\\s*\\d{1,8}"
     }
   ],
+  "defaultColor": "light-purple",
   "styles": [
     "./styles/styles.less"
   ],

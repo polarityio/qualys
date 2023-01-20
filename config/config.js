@@ -10,6 +10,7 @@ module.exports = {
       regex: /(?:QID|qid):\s*\d{1,8}/
     }
   ],
+  defaultColor: 'light-purple',
   styles: ['./styles/styles.less'],
   onDemandOnly: true,
   block: {
