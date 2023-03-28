@@ -1,4 +1,5 @@
 {
+  "polarityIntegrationUuid": "fbe4d7e0-cce1-11ed-aeee-075d3490155d",
   "name": "Qualys",
   "acronym": "QLS",
   "description": "The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, Domains, CVEs and QIDs.",
