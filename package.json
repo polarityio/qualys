@@ -14,7 +14,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "node-pre-gyp": "^0.17.0",
-    "node-schedule": "^2.0.0",
+    "node-schedule": "^2.1.1",
     "postman-request": "^2.88.1-postman.31",
     "sqlite3": "^4.2.0",
     "xml2js": "^0.4.23"
