@@ -1,22 +1,13 @@
 {
   "name": "qualys",
-  "version": "3.0.8",
+  "version": "3.1.0",
   "main": "./integration.js",
   "private": true,
   "license": "MIT",
   "author": "Polarity",
-  "scripts": {
-    "remote-install": "VERSION=\"3.0.5-beta\" && wget -c \"https://github.com/polarityio/qualys/releases/download/${VERSION}/qualys-${VERSION}.tgz\" -O - | tar -xz -C /app/polarity-server/integrations/",
-    "reset-database": "rm -rf ./data"
-  },
   "dependencies": {
-    "knex": "^0.95.6",
     "lodash": "^4.17.21",
-    "moment": "^2.29.4",
-    "node-pre-gyp": "^0.17.0",
-    "node-schedule": "^2.0.0",
-    "postman-request": "^2.88.1-postman.31",
-    "sqlite3": "^4.2.0",
-    "xml2js": "^0.4.23"
+    "postman-request": "^2.88.1-postman.33",
+    "xml2js": "^0.6.2"
   }
 }
