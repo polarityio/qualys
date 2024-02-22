@@ -39,8 +39,6 @@ const QUERY_PATHS_BY_TYPE = {
   }
 };
 
-const DATABASE_PATH = './data/knowledgeBase.sqlite';
-
 const SEARCH_COLUMN_NAMES_BY_TYPE = {
   cve: ['title', 'category', 'diagnosis', 'solution', 'cves', 'vender_references'],
   qid: ['qid'],
@@ -104,19 +102,10 @@ const KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT = {
   newSectionLineBreak: { isNewSectionLineBreak: true }
 };
 
-const KNOWLEDGE_BASE_QUERY_PAGE_LIMIT = 20;
-
-const TEMP_TABLE_NAME = 'knowledge_base_temp';
-const TABLE_NAME = 'knowledge_base';
-
 module.exports = {
   IGNORED_IPS,
   QUERY_PATHS_BY_TYPE,
-  DATABASE_PATH,
   SEARCH_COLUMN_NAMES_BY_TYPE,
   KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT,
-  HOST_DETECTION_DISPLAY_FORMAT,
-  KNOWLEDGE_BASE_QUERY_PAGE_LIMIT,
-  TEMP_TABLE_NAME,
-  TABLE_NAME
+  HOST_DETECTION_DISPLAY_FORMAT
 };
