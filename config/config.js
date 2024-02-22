@@ -3,7 +3,7 @@ module.exports = {
   acronym: 'QLS',
   description:
     "The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, Domains, CVEs and QIDs.",
-  entityTypes: ['IPv4', 'IPv6', 'domain', 'cve'],
+  entityTypes: ['IPv4', 'IPv6'],
   customTypes: [
     {
       key: 'qid',
@@ -60,19 +60,6 @@ module.exports = {
       type: 'password',
       userCanEdit: false,
       adminOnly: true
-    },
-    {
-      key: 'shouldDeepSearchForAssets',
-      name: 'Do Deep Search For Assets (Host List Detections)',
-      description:
-        'Currently, Qualys only allows for searching Assets (Host List Detections) by IP ' +
-        'Address and QID.  If checked, this option will make it so other entity types that ' +
-        'obtain results from the KnowledgeBase, search those results QIDs automatically ' +
-        'in the Asset Lists.  (NOTE: this will increase query times)',
-      default: false,
-      type: 'boolean',
-      userCanEdit: true,
-      adminOnly: false
     }
   ]
 };

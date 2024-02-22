@@ -53,26 +53,11 @@ const getData = async (
     )
   ]);
 
-
-  let knowledgeBaseDetections = [];
-  if (options.shouldDeepSearchForAssets) {
-    knowledgeBaseDetections = await queryHostDetectionListForAllEntities(
-      map(
-        flow(get('qid'), (qid) => ({ type: 'qid', value: qid })),
-        allFoundKnowledgeBaseRecords
-      ),
-      options,
-      requestWithDefaults,
-      Logger
-    );
-  }
-
   const allHostDetections = flow(
-    concat(knowledgeBaseDetections),
     uniqBy('id')
   )(initialHostDetections);
 
-  Logger.trace({ allHostDetections, allFoundKnowledgeBaseRecords });
+  Logger.trace({ allHostDetections }, 'All Host Detections');
 
   return { allHostDetections, allFoundKnowledgeBaseRecords };
 };
