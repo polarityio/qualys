@@ -239,32 +239,6 @@
             <span class="copied-label">Copied</span>
           {{/if}}
         </div>
-      {{else if displayField.isOnMessageButton}}
-        <div class="d-flex flex-row justify-content-between align-items-center">
-          <div>
-            {{#if (get isRunningStates displayField.label displayFieldIndex)}}
-              {{fa-icon "spinner-third" fixedWidth=true spin=true}}
-              {{or displayField.runningText "Running"}}
-            {{/if}}
-          </div>
-          <button
-            {{action "customOnMessage" displayField displayFieldIndex}}
-            class="p-btn btn btn-light mt-1"
-            disabled={{get isRunningStates displayField.label displayFieldIndex}}
-          >
-            {{displayField.label}}
-          </button>
-        </div>
-        {{#if (get messageStates displayField.label displayFieldIndex)}}
-          <div class="alert alert-info mt-1">
-            {{get messageStates displayField.label displayFieldIndex}}
-          </div>
-        {{/if}}
-        {{#if (get errorMessageStates displayField.label displayFieldIndex)}}
-          <div class="alert alert-danger mt-1">
-            {{get errorMessageStates displayField.label displayFieldIndex}}
-          </div>
-        {{/if}}
       {{else}}
         <div class="pl-{{displayField.indent}}">
           <span class="p-key">{{displayField.label}}:</span>
@@ -296,22 +270,5 @@
         </div>
       {{/if}}
     {{/each}}
-    {{#if (and (eq activeTab "knowledgeBaseRecords") showLoadMoreKnowledgeBaseRecords) }}
-      {{#if loadingMoreKnowledgeBaseRecords}}
-        {{fa-icon "spinner-third" fixedWidth=true spin=true}}
-        <span class="loading">Loading More</span>
-      {{else}}
-        <a
-          href="#"
-          class="expandable-title load-more"
-          {{on "click" (action "loadMoreKnowledgeBaseRecords")}}
-        >
-          Load More...
-        </a>
-      {{/if}}
-      {{#if hostDetectionsFound}}
-        <span class="load-more">New Host Detections Found!</span>
-      {{/if}}
-    {{/if}}
   {{/if}}
 {{/each}}

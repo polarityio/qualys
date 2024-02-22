@@ -2,18 +2,12 @@ const { flow, map, split, first, last, trim, concat, get, uniqBy } = require('lo
 
 const { splitOutIgnoredIps } = require('./dataTransformations');
 const createLookupResults = require('./createLookupResults');
-
-const queryAssetsForAllEntities = require('./querying/queryAssetsForAllEntities');
-const queryVulnerabilitiesForAllEntities = require('./querying/queryVulnerabilitiesForAllEntities');
 const queryHostDetectionListForAllEntities = require('./querying/queryHostDetectionListForAllEntities');
-const queryKnowledgeBase = require('./querying/queryKnowledgeBase');
 const associateDataWithEntities = require('./associateDataWithEntities');
-const { TABLE_NAME } = require('./constants');
 
 const getLookupResults = async (
   entities,
   options,
-  knex,
   requestWithDefaults,
   Logger
 ) => {
@@ -34,13 +28,11 @@ const getLookupResults = async (
   const data = await getData(
     entitiesPartition,
     options,
-    knex,
     requestWithDefaults,
     Logger
   );
 
   const foundEntities = associateDataWithEntities(entitiesPartition, data, Logger);
-
   const lookupResults = createLookupResults(foundEntities, Logger);
 
   return lookupResults.concat(ignoredIpLookupResults);
@@ -49,47 +41,23 @@ const getLookupResults = async (
 const getData = async (
   entitiesPartition,
   options,
-  knex,
   requestWithDefaults,
   Logger
 ) => {
-  let knexIsLoaded;
-  try {
-    knexIsLoaded = knex && (await knex.raw(`SELECT COUNT(*) FROM ${TABLE_NAME}`));
-  } catch (error) {}
-
   const [initialHostDetections, allFoundKnowledgeBaseRecords] = await Promise.all([
     queryHostDetectionListForAllEntities(
       entitiesPartition,
       options,
       requestWithDefaults,
       Logger
-    ),
-    !options.disableKnowledgeBase && knexIsLoaded
-      ? queryKnowledgeBase(entitiesPartition, knex, Logger)
-      : async () => []
+    )
   ]);
 
-
-  let knowledgeBaseDetections = [];
-  if (options.shouldDeepSearchForAssets) {
-    knowledgeBaseDetections = await queryHostDetectionListForAllEntities(
-      map(
-        flow(get('qid'), (qid) => ({ type: 'qid', value: qid })),
-        allFoundKnowledgeBaseRecords
-      ),
-      options,
-      requestWithDefaults,
-      Logger
-    );
-  }
-
   const allHostDetections = flow(
-    concat(knowledgeBaseDetections),
     uniqBy('id')
   )(initialHostDetections);
 
-  Logger.trace({ allHostDetections, allFoundKnowledgeBaseRecords });
+  Logger.trace({ allHostDetections }, 'All Host Detections');
 
   return { allHostDetections, allFoundKnowledgeBaseRecords };
 };
