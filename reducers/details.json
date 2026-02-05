@@ -1,0 +1,31 @@
+{
+  "root": {
+    "path": "",
+    "on_null": "return_empty"
+  },
+  "pipeline": [
+    {
+      "op": "copy",
+      "from": "hostDetections",
+      "to": "reduced_results.hostDetections"
+    },
+    {
+      "op": "copy",
+      "from": "tabKeys",
+      "to": "reduced_results.tabKeys"
+    },
+    {
+      "op": "project_and_replace",
+      "path": "reduced_results.hostDetections[]",
+      "keep": ["label", "value"]
+    },
+    {
+      "op": "prune",
+      "strategy": "empty_values",
+      "target": "reduced_results"
+    }
+  ],
+  "output": {
+    "result": "$working.reduced_results"
+  }
+}
