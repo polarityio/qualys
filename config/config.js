@@ -2,8 +2,8 @@ module.exports = {
   name: 'Qualys',
   acronym: 'QLS',
   description:
-    "The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, Domains, CVEs and QIDs.",
-  entityTypes: ['IPv4', 'IPv6'],
+    "The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, IPv6 Addresses, Domains, CVEs, and QIDs.",
+  entityTypes: ['IPv4', 'IPv6', 'domain', 'cve'],
   customTypes: [
     {
       key: 'qid',

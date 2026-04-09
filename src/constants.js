@@ -61,14 +61,16 @@ const HOST_DETECTION_DISPLAY_FORMAT = {
     indent: 1,
     collapsibleListItems: true,
     itemDisplayFormat: {
-      results: 'Detection Result',
       qid: { label: 'QID', fieldIsCopyable: true, shouldCopyFieldLabel: true },
       type: 'Detection Type',
       severity: 'Severity',
+      qds: 'QDS Score',
+      qds_severity: 'QDS Severity',
+      qds_factors: 'QDS Factors',
+      status: 'Status',
       port: 'Port',
       protocol: 'Protocol',
       ssl: 'SSL',
-      status: 'Status',
       is_ignored: 'Is Ignored',
       is_disabled: 'Is Disabled',
       times_found: 'Times Found',
@@ -76,9 +78,31 @@ const HOST_DETECTION_DISPLAY_FORMAT = {
       last_found_datetime: { label: 'Last Found', isDate: true },
       last_test_datetime: { label: 'Last Tested', isDate: true },
       last_update_datetime: { label: 'Last Updated', isDate: true },
-      last_processed_datetime: { label: 'Last Processed', isDate: true }
+      last_processed_datetime: { label: 'Last Processed', isDate: true },
+      results: 'Detection Result'
     }
   },
+  newSectionLineBreak: { isNewSectionLineBreak: true }
+};
+
+const CVE_DISPLAY_FORMAT = {
+  title: { isTitle: true },
+  qid: { label: 'QID', fieldIsCopyable: true, shouldCopyFieldLabel: true },
+  vuln_type: 'Vuln Type',
+  severity: 'Severity Level',
+  category: 'Category',
+  patchable: 'Patch Available',
+  published: { label: 'Published On', isDate: true },
+  modified: { label: 'Last Modified', isDate: true },
+  cvss_base: 'CVSS Base',
+  cvss_temporal: 'CVSS Temporal',
+  cvss_v3_base: 'CVSS v3 Base',
+  cvss_v3_temporal: 'CVSS v3 Temporal',
+  threat_intelligence: 'Threat Intelligence',
+  cves: { label: 'CVE IDs', isListOfLinks: true },
+  diagnosis: { label: 'Diagnosis', isHtml: true },
+  consequence: { label: 'Consequence', isHtml: true },
+  solution: { label: 'Solution', isHtml: true },
   newSectionLineBreak: { isNewSectionLineBreak: true }
 };
 
@@ -107,5 +131,6 @@ module.exports = {
   QUERY_PATHS_BY_TYPE,
   SEARCH_COLUMN_NAMES_BY_TYPE,
   KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT,
-  HOST_DETECTION_DISPLAY_FORMAT
+  HOST_DETECTION_DISPLAY_FORMAT,
+  CVE_DISPLAY_FORMAT
 };
