@@ -2,11 +2,12 @@ const { map, toLower, filter, flow, replace, includes, get, concat, uniqBy, flat
 
 const associateDataWithEntities = (
   entities,
-  { allHostDetections, allFoundKnowledgeBaseRecords },
+  { allHostDetections, allFoundKnowledgeBaseRecords, allScanResults },
   Logger
 ) =>
   map((entity) => {
     const entityType = entity.type;
+    const entityScans = findEntityScans(entity, allScanResults || []);
 
     // CVE entities: match KB records by _sourceCve tag (set during KB query)
     // then find host detections that contain the QIDs from those KB records
@@ -24,7 +25,8 @@ const associateDataWithEntities = (
         entity,
         results: {
           hostDetections,
-          knowledgeBaseRecords
+          knowledgeBaseRecords,
+          scans: entityScans
         }
       };
     }
@@ -45,7 +47,8 @@ const associateDataWithEntities = (
         entity,
         results: {
           hostDetections,
-          knowledgeBaseRecords
+          knowledgeBaseRecords,
+          scans: entityScans
         }
       };
     }
@@ -57,10 +60,29 @@ const associateDataWithEntities = (
       entity,
       results: {
         hostDetections,
-        knowledgeBaseRecords: []
+        knowledgeBaseRecords: [],
+        scans: entityScans
       }
     };
   }, entities);
+
+/**
+ * Find scan results for a given entity.
+ * IPs: match by entityValue (results filtered by target IP during query)
+ * QIDs: use the shared '__RECENT__' bucket (recent account scans, no QID filter available)
+ * Others: no scans
+ */
+const findEntityScans = (entity, allScanResults) => {
+  if (entity.isIP || entity.type === 'IPv4' || entity.type === 'IPv6') {
+    const entry = allScanResults.find((r) => r.entityValue === entity.value);
+    return entry ? entry.scans : [];
+  }
+  if (entity.type === 'qid') {
+    const entry = allScanResults.find((r) => r.entityValue === '__RECENT__');
+    return entry ? entry.scans : [];
+  }
+  return [];
+};
 
 const getObjectsContainingString = (string, objs) =>
   filter(

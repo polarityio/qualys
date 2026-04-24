@@ -126,11 +126,26 @@ const KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT = {
   newSectionLineBreak: { isNewSectionLineBreak: true }
 };
 
+const SCAN_DISPLAY_FORMAT = {
+  title: { isTitle: true },
+  state: 'Status',
+  sub_state: 'Sub-Status',
+  launch_datetime: { label: 'Launched', isDate: true },
+  duration: 'Duration',
+  type: 'Scan Type',
+  user_login: 'Launched By',
+  target: 'Target',
+  option_profile: 'Option Profile',
+  ref: { label: 'Reference', fieldIsCopyable: true, shouldCopyFieldLabel: false },
+  newSectionLineBreak: { isNewSectionLineBreak: true }
+};
+
 module.exports = {
   IGNORED_IPS,
   QUERY_PATHS_BY_TYPE,
   SEARCH_COLUMN_NAMES_BY_TYPE,
   KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT,
   HOST_DETECTION_DISPLAY_FORMAT,
-  CVE_DISPLAY_FORMAT
+  CVE_DISPLAY_FORMAT,
+  SCAN_DISPLAY_FORMAT
 };

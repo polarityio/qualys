@@ -13,14 +13,22 @@ const {
   maxBy
 } = require('lodash/fp');
 
-const { HOST_DETECTION_DISPLAY_FORMAT, CVE_DISPLAY_FORMAT } = require('./constants');
+const {
+  HOST_DETECTION_DISPLAY_FORMAT,
+  CVE_DISPLAY_FORMAT,
+  SCAN_DISPLAY_FORMAT
+} = require('./constants');
 const getDisplayResults = require('./getDisplayResults');
 
 const QDS_SEVERITY_ORDER = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 };
 
-const createLookupResults = (foundEntities, Logger) =>
+const createLookupResults = (foundEntities, options, Logger) =>
   map(({ entity, results }) => {
-    const formattedQueryResult = formatQueryResult(entity, results);
+    const isIpEntity =
+      entity.isIP || entity.type === 'IPv4' || entity.type === 'IPv6';
+    const enableScanLaunch = getOptionBool(options && options.enableScanLaunch, true);
+
+    const formattedQueryResult = formatQueryResult(entity, results, isIpEntity);
 
     const lookupResult = {
       entity,
@@ -28,9 +36,16 @@ const createLookupResults = (foundEntities, Logger) =>
       data: !!formattedQueryResult
         ? {
             summary: createSummary(entity, results, Logger),
-            details: flow(keys, (keys) =>
+            details: flow(keys, (tabKeys) =>
               assign(formattedQueryResult, {
-                tabKeys: keys
+                tabKeys,
+                // _scanMeta is NOT in tabKeys (computed before this assign) so it
+                // won't render as a tab, but is accessible to the component for
+                // showing/hiding the Launch Scan button
+                _scanMeta: {
+                  isIpEntity,
+                  enableScanLaunch
+                }
               })
             )(formattedQueryResult)
           }
@@ -40,7 +55,7 @@ const createLookupResults = (foundEntities, Logger) =>
     return lookupResult;
   }, foundEntities);
 
-const createSummary = (entity, { hostDetections, knowledgeBaseRecords }, Logger) => {
+const createSummary = (entity, { hostDetections, knowledgeBaseRecords, scans }, Logger) => {
   const type = entity.type;
 
   if (type === 'cve') {
@@ -83,12 +98,15 @@ const createSummary = (entity, { hostDetections, knowledgeBaseRecords }, Logger)
   ].filter(Boolean);
 };
 
-const formatQueryResult = (entity, result) => {
-  const resultNotEmpty = flow(mapValues(size), some(identity))(result);
+const formatQueryResult = (entity, result, isIpEntity) => {
+  const { hostDetections, knowledgeBaseRecords, scans } = result;
+
+  const resultNotEmpty = flow(mapValues(size), some(identity))({
+    hostDetections,
+    knowledgeBaseRecords
+  });
 
   if (!resultNotEmpty) return null;
-
-  const { hostDetections, knowledgeBaseRecords } = result;
 
   // Sort detections by QDS descending (highest risk first)
   const sortedDetections = (hostDetections || []).map((host) => ({
@@ -100,21 +118,43 @@ const formatQueryResult = (entity, result) => {
     })
   }));
 
+  // Build the scans display: process through SCAN_DISPLAY_FORMAT for generic renderer
+  // For IPs: always include tab (placeholder when empty so Launch Scan is accessible)
+  // For QIDs: only include tab when there are actual scan results
+  const scanDisplayResults = getDisplayResults(SCAN_DISPLAY_FORMAT, scans || []);
+  const scansTab = isIpEntity
+    ? scanDisplayResults.length
+      ? scanDisplayResults
+      : [{ isTextBlock: true, value: 'No recent scans found for this IP.' }]
+    : scanDisplayResults.length
+    ? scanDisplayResults
+    : null;
+
   if (entity.type === 'cve' || entity.type === 'qid') {
     const kbDisplayResults = getDisplayResults(CVE_DISPLAY_FORMAT, knowledgeBaseRecords);
     const hostDisplayResults = getDisplayResults(HOST_DETECTION_DISPLAY_FORMAT, sortedDetections);
 
     return {
       knowledgeBaseRecords: kbDisplayResults,
-      hostDetections: hostDisplayResults
+      hostDetections: hostDisplayResults,
+      ...(scansTab ? { scans: scansTab } : {})
     };
   }
 
   // IP / Domain
   const hostDisplayResults = getDisplayResults(HOST_DETECTION_DISPLAY_FORMAT, sortedDetections);
   return {
-    hostDetections: hostDisplayResults
+    hostDetections: hostDisplayResults,
+    ...(scansTab ? { scans: scansTab } : {})
   };
+};
+
+/** Safely read a Polarity option that may be a raw value or { value } wrapper */
+const getOptionBool = (opt, defaultValue) => {
+  if (opt === null || opt === undefined) return defaultValue;
+  if (typeof opt === 'boolean') return opt;
+  if (typeof opt === 'object' && 'value' in opt) return opt.value;
+  return defaultValue;
 };
 
 module.exports = createLookupResults;

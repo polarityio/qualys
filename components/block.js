@@ -12,6 +12,15 @@ polarity.export = PolarityComponent.extend({
   errorMessageStates: {},
   hostDetectionsFound: false,
   activeTab: '',
+  isScanLaunching: false,
+  scanLaunchError: '',
+  scanLaunchSuccess: '',
+
+  isIpEntityAndScanEnabled: Ember.computed('details._scanMeta', function () {
+    const meta = this.get('details._scanMeta');
+    return !!(meta && meta.isIpEntity && meta.enableScanLaunch);
+  }),
+
   init() {
     const details = this.get('details');
     this.set(
@@ -24,6 +33,34 @@ polarity.export = PolarityComponent.extend({
   actions: {
     changeTab: function (tabName) {
       this.set('activeTab', tabName);
+      // Clear scan messages when switching tabs
+      if (tabName !== 'scans') {
+        this.set('scanLaunchError', '');
+        this.set('scanLaunchSuccess', '');
+      }
+    },
+    launchScan: function () {
+      if (this.get('isScanLaunching')) return;
+
+      const entityValue = this.get('block.entity.value');
+      this.set('isScanLaunching', true);
+      this.set('scanLaunchError', '');
+      this.set('scanLaunchSuccess', '');
+      this.get('block').notifyPropertyChange('data');
+
+      this.sendIntegrationMessage({ action: 'LAUNCH_SCAN', entityValue }, (err, result) => {
+        this.set('isScanLaunching', false);
+        if (err) {
+          this.set('scanLaunchError', err.detail || 'Scan launch failed. Check Polarity logs.');
+        } else {
+          const ref = result && result.scanRef ? ` (${result.scanRef})` : '';
+          this.set(
+            'scanLaunchSuccess',
+            `Scan launched${ref}. Results may take several minutes to appear in Qualys.`
+          );
+        }
+        this.get('block').notifyPropertyChange('data');
+      });
     },
     toggleExpandableTitle: function (
       displayFieldIndex,

@@ -105,8 +105,40 @@ hr {
   color: lightgray;
 }
 
-
-
 .operation-button-icon {
   color: #9e9e9e;
+}
+
+// ── Scan action bar ────────────────────────────────────────────────────────────
+
+.qls-scan-action-bar {
+  padding: 6px 0 4px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+.qls-launch-scan-btn {
+  font-size: 11px;
+  padding: 3px 10px;
+  letter-spacing: 0.03em;
+
+  &.qls-btn-loading {
+    opacity: 0.65;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+.qls-scan-msg {
+  margin-top: 5px;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.qls-scan-error {
+  color: #ff4d4f;
+}
+
+.qls-scan-success {
+  color: #52c41a;
 }

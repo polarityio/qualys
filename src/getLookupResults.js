@@ -4,6 +4,7 @@ const { splitOutIgnoredIps } = require('./dataTransformations');
 const createLookupResults = require('./createLookupResults');
 const queryHostDetectionListForAllEntities = require('./querying/queryHostDetectionListForAllEntities');
 const queryKnowledgeBaseForAllEntities = require('./querying/queryKnowledgeBaseForAllEntities');
+const queryScanListForAllEntities = require('./querying/queryScanListForEntities');
 const associateDataWithEntities = require('./associateDataWithEntities');
 
 const getLookupResults = async (
@@ -34,7 +35,7 @@ const getLookupResults = async (
   );
 
   const foundEntities = associateDataWithEntities(entitiesPartition, data, Logger);
-  const lookupResults = createLookupResults(foundEntities, Logger);
+  const lookupResults = createLookupResults(foundEntities, options, Logger);
 
   return lookupResults.concat(ignoredIpLookupResults);
 };
@@ -63,9 +64,25 @@ const getData = async (
     Logger
   );
 
-  Logger.trace({ allHostDetections, allFoundKnowledgeBaseRecords }, 'getData results');
+  // Scan list: fetch for IP and QID entities (gracefully skipped on failure)
+  let allScanResults = [];
+  try {
+    allScanResults = await queryScanListForAllEntities(
+      entitiesPartition,
+      options,
+      requestWithDefaults,
+      Logger
+    );
+  } catch (error) {
+    Logger.warn({ error }, 'Scan list query failed — scans tab will be empty');
+  }
 
-  return { allHostDetections, allFoundKnowledgeBaseRecords };
+  Logger.trace(
+    { allHostDetections, allFoundKnowledgeBaseRecords, allScanResults },
+    'getData results'
+  );
+
+  return { allHostDetections, allFoundKnowledgeBaseRecords, allScanResults };
 };
 
 module.exports = {
