@@ -1,6 +1,6 @@
 {
   "name": "qualys",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "main": "./integration.js",
   "private": true,
   "license": "MIT",
@@ -9,5 +9,10 @@
     "lodash": "^4.17.21",
     "postman-request": "^2.88.1-postman.33",
     "xml2js": "^0.6.2"
+  },
+  "overrides": {
+    "qs": "^6.15.1",
+    "tough-cookie": "^4.1.3",
+    "form-data": "^2.5.4"
   }
 }

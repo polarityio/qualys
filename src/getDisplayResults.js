@@ -5,13 +5,23 @@ const { mapObject } = require('./dataTransformations');
 const getDisplayResults = (displayFormat, results, dontFlatten) =>
   (dontFlatten ? map : flatMap)((record) => {
     const displayResultsAsObject = mapObject(
-      (contentInfo, columnName) =>
-        (get(columnName, record) ||
-          get('isTitle', contentInfo) ||
-          get('isNewSectionLineBreak', contentInfo)) && [
-          columnName,
-          buildDisplayValue(contentInfo, columnName, record)
-        ],
+      (contentInfo, columnName) => {
+        const rawValue = get(columnName, record);
+
+        // For isListOfLinks, skip the field entirely when there are no valid entries
+        if (contentInfo.isListOfLinks && rawValue) {
+          const parsed = JSON.parse(rawValue);
+          const validItems = parsed.filter((item) => item && item.id);
+          if (!validItems.length) return false;
+        }
+
+        return (
+          (rawValue || get('isTitle', contentInfo) || get('isNewSectionLineBreak', contentInfo)) && [
+            columnName,
+            buildDisplayValue(contentInfo, columnName, record)
+          ]
+        );
+      },
       displayFormat
     );
 
@@ -26,7 +36,7 @@ const buildDisplayValue = (contentInfo, columnName, record) =>
     : assign(contentInfo, {
         value: flow(get(columnName), (value) =>
           contentInfo.isListOfLinks
-            ? JSON.parse(value)
+            ? JSON.parse(value).filter((item) => item && item.id)
             : contentInfo.isList
             ? getDisplayResults(
                 contentInfo.itemDisplayFormat,
