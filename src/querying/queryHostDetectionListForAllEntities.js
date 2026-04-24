@@ -169,7 +169,7 @@ const HOST_DETECTIONS_LIST_FORMAT = {
 };
 
 // Two-step domain resolution:
-// Step 1: query /api/2.0/fo/asset/host/ with tracking_method=DNS to find hosts by DNS name
+// Step 1: query /api/5.0/fo/asset/host/ with tracking_method=DNS to find hosts by DNS name
 // Step 2: run detection query against the resolved IPs at /api/5.0/
 const queryHostDetectionListForDomains =
   (options, requestWithDefaults, Logger) => async (domainEntities) => {
@@ -182,7 +182,7 @@ const queryHostDetectionListForDomains =
           'body',
           await requestWithDefaults({
             method: 'GET',
-            url: `${options.url}/api/2.0/fo/asset/host/`,
+            url: `${options.url}/api/5.0/fo/asset/host/`,
             qs: {
               action: 'list',
               details: 'Basic',

@@ -13,8 +13,8 @@ const {
 /**
  * Query the Qualys KnowledgeBase API for CVE and QID entities.
  *
- * CVE  → POST /api/2.0/fo/knowledge_base/vuln/index.php?action=list&cve={id}&details=All
- * QID  → POST /api/2.0/fo/knowledge_base/vuln/index.php?action=list&ids={qid}&details=All
+ * CVE  → POST /api/4.0/fo/knowledge_base/vuln/index.php?action=list&cve={id}&details=All
+ * QID  → POST /api/4.0/fo/knowledge_base/vuln/index.php?action=list&ids={qid}&details=All
  *
  * Returns an array of parsed KB vulnerability records.
  */
@@ -83,7 +83,7 @@ const _queryKnowledgeBase = async (filterParams, options, requestWithDefaults, L
       'body',
       await requestWithDefaults({
         method: 'POST',
-        url: `${options.url}/api/2.0/fo/knowledge_base/vuln/index.php`,
+        url: `${options.url}/api/4.0/fo/knowledge_base/vuln/index.php`,
         qs: {
           action: 'list',
           details: 'All',
