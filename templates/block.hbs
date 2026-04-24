@@ -17,25 +17,69 @@
 {{! Launch Scan action bar — shown on the Scans tab for IP entities when scan launch is enabled }}
 {{#if (and (eq activeTab "scans") isIpEntityAndScanEnabled)}}
   <div class="qls-scan-action-bar">
-    <button
-      type="button"
-      class="btn btn-primary btn-sm qls-launch-scan-btn {{if isScanLaunching "qls-btn-loading"}}"
-      {{action "launchScan"}}
-    >
-      {{#if isScanLaunching}}
-        {{fa-icon "spinner-third" spin=true fixedWidth=true}} Launching...
-      {{else}}
-        {{fa-icon "crosshairs" fixedWidth=true}} Launch Scan
-      {{/if}}
-    </button>
+
+    {{! ── Launch button (shown when no scan is pending) ────────────────── }}
+    {{#unless hasScanRef}}
+      <button
+        type="button"
+        class="btn btn-primary btn-sm qls-launch-scan-btn {{if isScanLaunching "qls-btn-loading"}}"
+        disabled={{isScanLaunching}}
+        {{action "launchScan"}}
+      >
+        {{#if isScanLaunching}}
+          {{fa-icon "spinner-third" spin=true fixedWidth=true}} Launching...
+        {{else}}
+          {{fa-icon "crosshairs" fixedWidth=true}} Launch Scan
+        {{/if}}
+      </button>
+    {{/unless}}
+
+    {{! ── Post-launch: scan ref + Check Status controls ──────────────────── }}
+    {{#if hasScanRef}}
+      <div class="qls-scan-ref-bar">
+        <span class="qls-scan-ref-label">
+          {{fa-icon "check-circle" fixedWidth=true}} Scan submitted:
+        </span>
+        <code class="qls-scan-ref-code">{{scanRef}}</code>
+      </div>
+
+      <div class="qls-scan-status-bar">
+        <button
+          type="button"
+          class="btn btn-sm qls-check-status-btn {{if isCheckingStatus "qls-btn-loading"}}"
+          disabled={{isCheckingStatus}}
+          {{action "checkScanStatus"}}
+        >
+          {{#if isCheckingStatus}}
+            {{fa-icon "spinner-third" spin=true fixedWidth=true}} Checking...
+          {{else}}
+            {{fa-icon "sync" fixedWidth=true}} Check Status
+          {{/if}}
+        </button>
+
+        {{#if scanState}}
+          <span class="qls-scan-state-badge {{scanStateClass}}">
+            {{scanState}}{{#if scanSubState}} / {{scanSubState}}{{/if}}
+          </span>
+          {{#if scanDuration}}
+            <span class="qls-scan-duration">{{scanDuration}}</span>
+          {{/if}}
+        {{/if}}
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-link btn-sm qls-relaunch-btn"
+        {{action "launchScan"}}
+      >
+        {{fa-icon "redo" fixedWidth=true}} Launch New Scan
+      </button>
+    {{/if}}
+
+    {{! ── Error message ─────────────────────────────────────────────────── }}
     {{#if scanLaunchError}}
       <div class="qls-scan-msg qls-scan-error">
         {{fa-icon "times-circle" fixedWidth=true}} {{scanLaunchError}}
-      </div>
-    {{/if}}
-    {{#if scanLaunchSuccess}}
-      <div class="qls-scan-msg qls-scan-success">
-        {{fa-icon "check-circle" fixedWidth=true}} {{scanLaunchSuccess}}
       </div>
     {{/if}}
   </div>

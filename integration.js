@@ -3,6 +3,7 @@ const { validateStringOptions, validateUrlOption } = require('./src/validateOpti
 const { parseErrorToReadableJSON } = require('./src/dataTransformations');
 const { getLookupResults } = require('./src/getLookupResults');
 const launchScan = require('./src/launchScan');
+const checkScanStatus = require('./src/checkScanStatus');
 
 let Logger;
 let requestWithDefaults;
@@ -69,6 +70,17 @@ const onMessage = async (payload, options, cb) => {
       );
       return cb(null, result);
     }
+
+    if (payload.action === 'CHECK_SCAN_STATUS') {
+      const result = await checkScanStatus(
+        payload.scanRef,
+        options,
+        requestWithDefaults,
+        Logger
+      );
+      return cb(null, result);
+    }
+
     cb({ detail: `Unknown onMessage action: ${payload.action}` });
   } catch (error) {
     const err = parseErrorToReadableJSON(error);
