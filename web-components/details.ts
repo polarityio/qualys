@@ -439,14 +439,14 @@ export class DetailsComponent extends IntegrationComponentBase {
         <span class="kv-key">${field.label}:</span>
         <span class="link-list">
           ${links.map(
-            (link, i) => html`
-              <pi-external-link
+            // prettier-ignore
+            (link, i) => html`<pi-external-link
                 href=${link.url}
                 text=${link.capitalize ? capitalizeStr(link.id) : link.id}
                 no-icon
-              ></pi-external-link
-              >${i < links.length - 1 ? html`<span class="link-separator">, </span>` : nothing}
-            `
+              ></pi-external-link>${i < links.length - 1
+                ? html`<span class="link-separator">, </span>`
+                : nothing}`
           )}
         </span>
       </div>
