@@ -1,0 +1,222 @@
+{
+  "hostDetections": [
+    {
+      "label": "IP Address",
+      "value": "192.168.100.45",
+      "isTitle": true,
+      "showLabelAndValue": true
+    },
+    {
+      "label": "Host Detection ID",
+      "value": "987654321"
+    },
+    {
+      "label": "Asset Id",
+      "value": "12345678"
+    },
+    {
+      "label": "Category",
+      "value": "General Remote Services"
+    },
+    {
+      "label": "Operating System",
+      "value": "Linux 5.4.0-42-generic"
+    },
+    {
+      "label": "DNS",
+      "value": "web-server-01.example.com"
+    },
+    {
+      "label": "Last Scanned",
+      "value": "2024-01-15T14:23:45Z",
+      "isDate": true
+    },
+    {
+      "label": "Last VM Scanned",
+      "value": "2024-01-15T14:20:00Z",
+      "isDate": true
+    },
+    {
+      "label": "Last VM Scanned Duration",
+      "value": "00:15:32"
+    },
+    {
+      "label": "Detections List",
+      "value": [
+        [
+          {
+            "label": "Detection Result",
+            "value": "Confirmed"
+          },
+          {
+            "label": "QID",
+            "value": "38173",
+            "fieldIsCopyable": true,
+            "shouldCopyFieldLabel": true
+          },
+          {
+            "label": "Detection Type",
+            "value": "Confirmed"
+          },
+          {
+            "label": "Severity",
+            "value": "4"
+          },
+          {
+            "label": "Port",
+            "value": "443"
+          },
+          {
+            "label": "Protocol",
+            "value": "tcp"
+          },
+          {
+            "label": "SSL",
+            "value": "yes"
+          },
+          {
+            "label": "Status",
+            "value": "Active"
+          },
+          {
+            "label": "Is Ignored",
+            "value": "no"
+          },
+          {
+            "label": "Is Disabled",
+            "value": "no"
+          },
+          {
+            "label": "Times Found",
+            "value": "5"
+          },
+          {
+            "label": "First Found",
+            "value": "2024-01-10T08:15:00Z",
+            "isDate": true
+          },
+          {
+            "label": "Last Found",
+            "value": "2024-01-15T14:23:45Z",
+            "isDate": true
+          },
+          {
+            "label": "Last Tested",
+            "value": "2024-01-15T14:23:45Z",
+            "isDate": true
+          },
+          {
+            "label": "Last Updated",
+            "value": "2024-01-15T14:25:00Z",
+            "isDate": true
+          },
+          {
+            "label": "Last Processed",
+            "value": "2024-01-15T14:30:00Z",
+            "isDate": true
+          }
+        ],
+        [
+          {
+            "label": "Detection Result",
+            "value": "Potential"
+          },
+          {
+            "label": "QID",
+            "value": "86000",
+            "fieldIsCopyable": true,
+            "shouldCopyFieldLabel": true
+          },
+          {
+            "label": "Detection Type",
+            "value": "Potential"
+          },
+          {
+            "label": "Severity",
+            "value": "2"
+          },
+          {
+            "label": "Port",
+            "value": "22"
+          },
+          {
+            "label": "Protocol",
+            "value": "tcp"
+          },
+          {
+            "label": "SSL",
+            "value": "no"
+          },
+          {
+            "label": "Status",
+            "value": "Active"
+          },
+          {
+            "label": "Is Ignored",
+            "value": "no"
+          },
+          {
+            "label": "Is Disabled",
+            "value": "no"
+          },
+          {
+            "label": "Times Found",
+            "value": "12"
+          },
+          {
+            "label": "First Found",
+            "value": "2023-11-05T10:00:00Z",
+            "isDate": true
+          },
+          {
+            "label": "Last Found",
+            "value": "2024-01-15T14:23:45Z",
+            "isDate": true
+          },
+          {
+            "label": "Last Tested",
+            "value": "2024-01-15T14:23:45Z",
+            "isDate": true
+          },
+          {
+            "label": "Last Updated",
+            "value": "2024-01-15T14:25:00Z",
+            "isDate": true
+          },
+          {
+            "label": "Last Processed",
+            "value": "2024-01-15T14:30:00Z",
+            "isDate": true
+          }
+        ]
+      ],
+      "isList": true,
+      "indent": 1,
+      "collapsibleListItems": true,
+      "itemDisplayFormat": {
+        "results": "Detection Result",
+        "qid": {
+          "label": "QID",
+          "fieldIsCopyable": true,
+          "shouldCopyFieldLabel": true
+        }
+      }
+    },
+    {
+      "isNewSectionLineBreak": true
+    }
+  ],
+  "tabKeys": [
+    "hostDetections"
+  ],
+  "knowledgeBaseRecords": [],
+  "_metadata": {
+    "query_time": "2024-01-15T14:30:15Z",
+    "api_version": "v2",
+    "request_id": "req_abc123xyz789"
+  },
+  "_internal": {
+    "cache_hit": false,
+    "processing_time_ms": 1250
+  }
+}
