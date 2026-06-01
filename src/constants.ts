@@ -1,12 +1,9 @@
-const IGNORED_IPS = new Set(['127.0.0.1', '255.255.255.255', '0.0.0.0']);
+export const IGNORED_IPS = new Set(['127.0.0.1', '255.255.255.255', '0.0.0.0']);
 
-const QUERY_PATHS_BY_TYPE = {
+export const QUERY_PATHS_BY_TYPE: Record<string, Record<string, string[]>> = {
   qid: {
     assets: ['name'],
-    vulnerabilities: [
-      'vulnerabilities.vulnerability.qid',
-      'vulnerabilities.vulnerability.title'
-    ]
+    vulnerabilities: ['vulnerabilities.vulnerability.qid', 'vulnerabilities.vulnerability.title']
   },
   cve: {
     assets: ['name'],
@@ -14,38 +11,44 @@ const QUERY_PATHS_BY_TYPE = {
   },
   domain: {
     assets: ['name', 'interfaces.hostname'],
-    vulnerabilities: [
-      'vulnerabilities.hostAssetName',
-      'vulnerabilities.vulnerability.title'
-    ]
+    vulnerabilities: ['vulnerabilities.hostAssetName', 'vulnerabilities.vulnerability.title']
   },
   IPv4: {
-    assets: [
-      'interfaces.address',
-      'name',
-      'interfaces.dnsAddress',
-      'interfaces.gatewayAddress'
-    ],
+    assets: ['interfaces.address', 'name', 'interfaces.dnsAddress', 'interfaces.gatewayAddress'],
     vulnerabilities: ['vulnerabilities.vulnerability.title']
   },
   IPv6: {
-    assets: [
-      'interfaces.address',
-      'name',
-      'interfaces.dnsAddress',
-      'interfaces.gatewayAddress'
-    ],
+    assets: ['interfaces.address', 'name', 'interfaces.dnsAddress', 'interfaces.gatewayAddress'],
     vulnerabilities: ['vulnerabilities.vulnerability.title']
   }
 };
 
-const SEARCH_COLUMN_NAMES_BY_TYPE = {
+export const SEARCH_COLUMN_NAMES_BY_TYPE: Record<string, string[]> = {
   cve: ['title', 'category', 'diagnosis', 'solution', 'cves', 'vender_references'],
   qid: ['qid'],
   default: ['title', 'diagnosis', 'solution', 'vender_references']
 };
 
-const HOST_DETECTION_DISPLAY_FORMAT = {
+export interface DisplayFormatEntry {
+  label?: string;
+  isTitle?: boolean;
+  isDate?: boolean;
+  isList?: boolean;
+  isListOfLinks?: boolean;
+  isHtml?: boolean;
+  isNewSectionLineBreak?: boolean;
+  indent?: number;
+  collapsibleListItems?: boolean;
+  showLabelAndValue?: boolean;
+  fieldIsCopyable?: boolean;
+  shouldCopyFieldLabel?: boolean;
+  itemDisplayFormat?: DisplayFormat;
+}
+
+export type DisplayFormatValue = string | DisplayFormatEntry;
+export type DisplayFormat = Record<string, DisplayFormatValue>;
+
+export const HOST_DETECTION_DISPLAY_FORMAT: DisplayFormat = {
   ip: { label: 'IP Address', isTitle: true, showLabelAndValue: true },
   id: 'Host Detection ID',
   asset_id: 'Asset Id',
@@ -82,7 +85,7 @@ const HOST_DETECTION_DISPLAY_FORMAT = {
   newSectionLineBreak: { isNewSectionLineBreak: true }
 };
 
-const KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT = {
+export const KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT: DisplayFormat = {
   title: { isTitle: true },
   qid: { label: 'QID', fieldIsCopyable: true, shouldCopyFieldLabel: true },
   severity: 'Severity',
@@ -100,12 +103,4 @@ const KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT = {
   diagnosis: { label: 'Diagnosis', isHtml: true },
   solution: { label: 'Solution', isHtml: true },
   newSectionLineBreak: { isNewSectionLineBreak: true }
-};
-
-module.exports = {
-  IGNORED_IPS,
-  QUERY_PATHS_BY_TYPE,
-  SEARCH_COLUMN_NAMES_BY_TYPE,
-  KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT,
-  HOST_DETECTION_DISPLAY_FORMAT
 };
