@@ -1,13 +1,44 @@
 {
   "name": "qualys",
-  "version": "3.2.1",
-  "main": "./integration.js",
+  "version": "4.0.0",
+  "main": "./dist/integration.js",
   "private": true,
-  "license": "MIT",
+  "license": "UNLICENSED",
   "author": "Polarity",
   "dependencies": {
     "lodash": "^4.17.21",
-    "postman-request": "^2.88.1-postman.33",
+    "polarity-integration-utils": "^4.1.0",
     "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@polarityio/integration-types": "^1.1.0",
+    "@polarityio/pi-components": "^1.9.3",
+    "@polarityio/vite-plugin-icl": "^1.0.1",
+    "@types/lodash": "^4.17.24",
+    "@types/xml2js": "^0.4.14",
+    "@vitest/browser": "^4.1.4",
+    "@vitest/browser-playwright": "^4.1.4",
+    "eslint": "^10.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "lit": "^3.3.2",
+    "playwright": "^1.59.1",
+    "prettier": "^3.8.3",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.58.2",
+    "vite": "^7.3.2",
+    "vitest": "^4.1.4"
+  },
+  "scripts": {
+    "build": "tsc && vite build",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.web.json",
+    "lint": "eslint src/ web-components/",
+    "lint:fix": "eslint src/ web-components/ --fix",
+    "format": "prettier --write 'src/**/*.ts' 'web-components/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts' 'web-components/**/*.ts'",
+    "test": "vitest run",
+    "test:server": "vitest run --project server",
+    "test:browser": "vitest run --project browser",
+    "test:watch": "vitest"
   }
 }

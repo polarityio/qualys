@@ -16,7 +16,7 @@
         * List of all detections associated with Host
 
 <div style="display:flex; align-items: flex-start;">
-  <img width="370" style="margin-right: 7px" title="Host List Detections" alt="Host List Detections" src="./assets/Host List Detections.png">
+  <img width="370" style="margin-right: 7px" title="Host List Detections" alt="Host List Detections" src="./docs/Host List Detections.png">
 </div>
 
 ## About Qualys 

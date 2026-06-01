@@ -34,3 +34,4 @@ test-runner.js
 .polarity.conf
 
 data/
+dist/

@@ -3,38 +3,30 @@
   "name": "Qualys",
   "acronym": "QLS",
   "description": "The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, Domains, CVEs and QIDs.",
-  "entityTypes": [
+  "runtimeVersion": 2,
+  "defaultColor": "light-purple",
+  "onDemandOnly": true,
+  "dataTypes": [
     "IPv4",
     "IPv6"
   ],
-  "customTypes": [
-    {
-      "key": "qid",
-      "regex": "(?:QID|qid):\\s*\\d{1,8}"
-    }
-  ],
-  "defaultColor": "light-purple",
-  "styles": [
-    "./styles/styles.less"
-  ],
-  "onDemandOnly": true,
-  "block": {
-    "component": {
-      "file": "./components/block.js"
-    },
-    "template": {
-      "file": "./templates/block.hbs"
-    }
-  },
-  "request": {
-    "cert": "",
-    "key": "",
-    "passphrase": "",
-    "ca": "",
-    "proxy": ""
-  },
   "logging": {
     "level": "info"
+  },
+  "webComponents": {
+    "id": "512a1044-4cd2-4184-b120-48de15680389",
+    "moduleFilename": "web-components.mjs",
+    "components": [
+      {
+        "type": "details",
+        "element": "px-int-4szfuj42ymklnvnabm9q4yt1l-qls-details-v4-0-0"
+      }
+    ]
+  },
+  "reducer": {
+    "details": {
+      "file": "./reducers/details.json"
+    }
   },
   "options": [
     {
@@ -65,9 +57,10 @@
       "adminOnly": true
     }
   ],
-  "reducer": {
-    "details": {
-      "file": "./reducers/details.json"
+  "customTypes": [
+    {
+      "key": "qid",
+      "regex": "(?:QID|qid):\\s*\\d{1,8}"
     }
-  }
+  ]
 }
