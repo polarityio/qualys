@@ -2,7 +2,7 @@ import { css, html, nothing, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { IntegrationComponentBase, IBlock, typographyCSS } from '@polarityio/pi-components';
-import { faAngleUp, faAngleDown, faCopy } from '@polarityio/pi-icon';
+import { faAngleUp, faAngleDown, faCopy, faPlay, faRotate } from '@polarityio/pi-icon';
 
 interface DisplayField {
   label?: string;
@@ -78,6 +78,16 @@ export class DetailsComponent extends IntegrationComponentBase {
   @state() private _activeTab = '';
   @state() private _expandedStates: Record<string, boolean> = {};
   @state() private _copiedStates: Record<string, boolean> = {};
+  @state() private _scanLaunching = false;
+  @state() private _scanCheckingStatus = false;
+  @state() private _scanError: string | null = null;
+  @state() private _scanResult: { scanRef: string; scanTitle: string; message: string } | null =
+    null;
+  @state() private _scanStatus: {
+    ref: string;
+    state: string;
+    subState: string;
+  } | null = null;
 
   private _copyContentId = `copy-content-${Array.from(
     crypto.getRandomValues(new Uint8Array(16)),
@@ -230,6 +240,15 @@ export class DetailsComponent extends IntegrationComponentBase {
       .indent-3 {
         padding-left: var(--pi-size-spacing-xl, 24px);
       }
+
+      .scan-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--pi-size-spacing-xs, 4px);
+        padding-bottom: var(--pi-size-spacing-sm, 8px);
+        border-bottom: 1px solid var(--pi-color-border-container, #606470);
+        margin-bottom: var(--pi-size-spacing-sm, 8px);
+      }
     `
   ];
 
@@ -307,6 +326,61 @@ export class DetailsComponent extends IntegrationComponentBase {
     // No-op: cards remain expanded after copy
   };
 
+  private async _launchScan() {
+    const d = this.block.data?.details as any;
+    const meta = d?._scanMeta;
+    if (!meta?.entityValue) return;
+
+    this._scanLaunching = true;
+    this._scanError = null;
+    this._scanResult = null;
+    this._scanStatus = null;
+
+    try {
+      const result = (await this.sendIntegrationMessage({
+        action: 'LAUNCH_SCAN',
+        entityValue: meta.entityValue
+      })) as any;
+      this._scanResult = {
+        scanRef: result.scanRef,
+        scanTitle: result.scanTitle,
+        message: result.message
+      };
+      // Persist to block data so it survives component destruction
+      this.block.data!.details = { ...(this.block.data!.details as object), _scanResult: result };
+    } catch (error: any) {
+      this._scanError = error?.message || 'Failed to launch scan';
+    } finally {
+      this._scanLaunching = false;
+    }
+  }
+
+  private async _checkScanStatus() {
+    const scanRef =
+      this._scanResult?.scanRef || (this.block.data?.details as any)?._scanResult?.scanRef;
+    if (!scanRef) return;
+
+    this._scanCheckingStatus = true;
+    this._scanError = null;
+
+    try {
+      const result = (await this.sendIntegrationMessage({
+        action: 'CHECK_SCAN_STATUS',
+        scanRef
+      })) as any;
+      this._scanStatus = { ref: result.ref, state: result.state, subState: result.subState };
+      // Persist
+      this.block.data!.details = {
+        ...(this.block.data!.details as object),
+        _scanStatus: result
+      };
+    } catch (error: any) {
+      this._scanError = error?.message || 'Failed to check scan status';
+    } finally {
+      this._scanCheckingStatus = false;
+    }
+  }
+
   render() {
     const d = this.block.data?.details as Details | undefined;
     if (!d?.tabKeys?.length) return nothing;
@@ -331,7 +405,7 @@ export class DetailsComponent extends IntegrationComponentBase {
         </div>
         <div id=${this._copyContentId}>
           ${visibleTabs.length === 1
-            ? this._renderTabContent(d[visibleTabs[0]] as DisplayField[])
+            ? this._renderTabContent(d[visibleTabs[0]] as DisplayField[], visibleTabs[0])
             : html`
                 <pi-tab-group @pi-tab-change=${this._onTabChange}>
                   ${visibleTabs.map(
@@ -349,7 +423,7 @@ export class DetailsComponent extends IntegrationComponentBase {
                   ${visibleTabs.map(
                     (tabKey, idx) => html`
                       <pi-tab-panel slot="panel" ?active=${idx === activeIndex}>
-                        ${this._renderTabContent(d[tabKey] as DisplayField[])}
+                        ${this._renderTabContent(d[tabKey] as DisplayField[], tabKey)}
                       </pi-tab-panel>
                     `
                   )}
@@ -360,11 +434,75 @@ export class DetailsComponent extends IntegrationComponentBase {
     `;
   }
 
-  private _renderTabContent(fields: DisplayField[]) {
+  private _renderTabContent(fields: DisplayField[], tabKey?: string) {
     if (!fields?.length) return nothing;
     return html`
       <div class="tab-content">
+        ${tabKey === 'scans' ? this._renderScanActions() : nothing}
         ${fields.map((field, idx) => this._renderDisplayField(field, idx))}
+      </div>
+    `;
+  }
+
+  private _renderScanActions() {
+    const d = this.block.data?.details as any;
+    const meta = d?._scanMeta;
+    const isIp = meta?.entityType === 'IPv4' || meta?.entityType === 'IPv6';
+
+    if (!meta?.enableScanLaunch || !isIp) return nothing;
+
+    // Restore persisted results
+    const scanResult = this._scanResult || d?._scanResult;
+    const scanStatus = this._scanStatus || d?._scanStatus;
+
+    return html`
+      <div class="scan-actions">
+        ${!scanResult
+          ? html`
+              <pi-button
+                button-type="secondary"
+                size="sm"
+                .icon=${faPlay}
+                ?disabled=${this._scanLaunching}
+                @click=${() => this._launchScan()}
+              >
+                ${this._scanLaunching ? 'Launching…' : 'Launch Scan'}
+              </pi-button>
+            `
+          : html`
+              <pi-key-value
+                key="Scan Launched"
+                value=${scanResult.scanTitle || scanResult.message || ''}
+              ></pi-key-value>
+              <pi-key-value key="Reference" value=${scanResult.scanRef || ''}></pi-key-value>
+              ${scanStatus
+                ? html`
+                    <pi-key-value
+                      key="Status"
+                      value="${scanStatus.state}${scanStatus.subState
+                        ? ` (${scanStatus.subState})`
+                        : ''}"
+                    ></pi-key-value>
+                  `
+                : nothing}
+              <pi-button
+                button-type="tertiary"
+                size="sm"
+                .icon=${faRotate}
+                ?disabled=${this._scanCheckingStatus}
+                @click=${() => this._checkScanStatus()}
+              >
+                ${this._scanCheckingStatus ? 'Checking…' : 'Check Status'}
+              </pi-button>
+            `}
+        ${this._scanError
+          ? html`<pi-error
+              variant="danger"
+              open
+              error-title="Scan Error"
+              .message=${this._scanError}
+            ></pi-error>`
+          : nothing}
       </div>
     `;
   }

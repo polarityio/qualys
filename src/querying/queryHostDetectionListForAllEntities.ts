@@ -24,6 +24,8 @@ const queryHostDetectionListForAllEntities = async (
   const qidEntities = filter(flow(get('type'), eq('qid')), entities);
   const qidValues = map(get('value'), qidEntities) as string[];
 
+  const domainEntities = filter(flow(get('type'), eq('domain')), entities) as Entity[];
+
   const allHostDetectionResultForIpAddresses = size(ipValues)
     ? await queryHostDetectionList('ips', options, request, Logger)(ipValues)
     : [];
@@ -32,9 +34,13 @@ const queryHostDetectionListForAllEntities = async (
     ? await queryHostDetectionList('qids', options, request, Logger)(qidValues)
     : [];
 
-  return uniqBy('id', allHostDetectionResultForIpAddresses).concat(
-    uniqBy('id', allHostDetectionResultForQids)
-  );
+  const allHostDetectionResultForDomains = size(domainEntities)
+    ? await queryHostDetectionListForDomains(domainEntities, options, request, Logger)
+    : [];
+
+  return uniqBy('id', allHostDetectionResultForIpAddresses)
+    .concat(uniqBy('id', allHostDetectionResultForQids))
+    .concat(uniqBy('id', allHostDetectionResultForDomains));
 };
 
 const queryHostDetectionList =
@@ -43,12 +49,14 @@ const queryHostDetectionList =
     try {
       const response = await request.run({
         method: 'GET',
-        url: `${options.url}/api/2.0/fo/asset/host/vm/detection/`,
+        url: `${options.url}/api/5.0/fo/asset/host/vm/detection/`,
         qs: {
           action: 'list',
           [type]: join(',', entityValues),
           show_asset_id: 1,
-          show_results: 1
+          show_results: 1,
+          show_qds: 1,
+          show_qds_factors: 1
         },
         headers: { 'X-Requested-With': 'Polarity' },
         json: false
@@ -80,6 +88,68 @@ const queryHostDetectionList =
     }
   };
 
+/**
+ * Two-step domain resolution:
+ * 1. Query /api/5.0/fo/asset/host/ with tracking_method=DNS to find hosts by DNS name
+ * 2. Run detection query against the resolved IPs
+ */
+const queryHostDetectionListForDomains = async (
+  domainEntities: Entity[],
+  options: Record<string, any>,
+  request: PolarityRequest,
+  Logger: Logger
+): Promise<any[]> => {
+  const results: any[] = [];
+
+  for (const entity of domainEntities) {
+    try {
+      const hostListResponse = await request.run({
+        method: 'GET',
+        url: `${options.url}/api/5.0/fo/asset/host/`,
+        qs: {
+          action: 'list',
+          details: 'Basic',
+          tracking_method: 'DNS',
+          show_asset_id: 1
+        },
+        headers: { 'X-Requested-With': 'Polarity' },
+        json: false
+      });
+
+      const hostListXml = (hostListResponse!.body as string) || '';
+      const hostListJson = await xmlToJson(hostListXml, Logger);
+
+      const hosts = flow(
+        get('host_list_output.response.host_list.host'),
+        processPossibleList(false)
+      )(hostListJson) as any[] | null;
+
+      if (!hosts || !hosts.length) continue;
+
+      const matchingIps = hosts
+        .filter((h: any) => {
+          const dns = ((h.dns as string) || '').toLowerCase();
+          return dns.includes(entity.value.toLowerCase());
+        })
+        .map((h: any) => h.ip as string)
+        .filter(Boolean);
+
+      if (!matchingIps.length) continue;
+
+      const detections = await queryHostDetectionList('ips', options, request, Logger)(matchingIps);
+      results.push(...(detections || []));
+    } catch (error) {
+      const err = parseErrorToReadableJSON(error);
+      Logger.error(
+        { detail: 'Failed Domain Two-Step Lookup', domain: entity.value, formattedError: err },
+        'Domain Host Detection Failed'
+      );
+    }
+  }
+
+  return uniqBy('id', results) as any[];
+};
+
 const HOST_DETECTIONS_LIST_ITEM_FORMAT: Record<string, any> = {
   qid: 'qid',
   type: 'type',
@@ -87,6 +157,28 @@ const HOST_DETECTIONS_LIST_ITEM_FORMAT: Record<string, any> = {
   port: 'port',
   protocol: 'protocol',
   ssl: { path: 'ssl', process: (ssl: any) => (ssl == 1 ? 'Yes' : 'No') },
+  qds: {
+    path: 'qds',
+    process: (qds: any) => (qds && qds.value != null ? qds.value : qds)
+  },
+  qds_severity: {
+    path: 'qds',
+    process: (qds: any) => (qds && qds.attributes ? qds.attributes.severity : null)
+  },
+  qds_factors: {
+    path: 'qds_factors',
+    process: (qdsFactors: any) => {
+      if (!qdsFactors) return null;
+      const factors = processPossibleList(false)(qdsFactors.qds_factor || qdsFactors) as any[];
+      if (!factors) return null;
+      return factors.reduce((acc: Record<string, string>, f: any) => {
+        if (f && f.attributes && f.attributes.name) {
+          acc[f.attributes.name] = f.value || f;
+        }
+        return acc;
+      }, {});
+    }
+  },
   results: 'results',
   status: 'status',
   first_found_datetime: 'first_found_datetime',

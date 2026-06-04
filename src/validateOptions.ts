@@ -43,3 +43,21 @@ export const validateUrlOption = (
 
   return otherErrors;
 };
+
+export const validateScanOptions = (
+  options: ValidateOptionsUserOptions,
+  otherErrors: ValidationError[] = []
+): ValidationError[] => {
+  const enableScanLaunch = options.enableScanLaunch?.value;
+  if (!enableScanLaunch) return otherErrors;
+
+  const scanOptionProfile = options.scanOptionProfile?.value as string | undefined;
+  if (!scanOptionProfile || scanOptionProfile.trim() === '') {
+    return otherErrors.concat({
+      key: 'scanOptionProfile',
+      message: 'Scan Option Profile is required when Enable Scan Launch is enabled.'
+    });
+  }
+
+  return otherErrors;
+};

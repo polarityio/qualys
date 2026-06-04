@@ -2,13 +2,15 @@
   "polarityIntegrationUuid": "fbe4d7e0-cce1-11ed-aeee-075d3490155d",
   "name": "Qualys",
   "acronym": "QLS",
-  "description": "The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, Domains, CVEs and QIDs.",
+  "description": "The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, IPv6 Addresses, Domains, CVEs, and QIDs.",
   "runtimeVersion": 2,
   "defaultColor": "light-purple",
   "onDemandOnly": true,
   "dataTypes": [
     "IPv4",
-    "IPv6"
+    "IPv6",
+    "domain",
+    "cve"
   ],
   "logging": {
     "level": "info"
@@ -53,6 +55,33 @@
       "description": "The Password associated with the Qualys Account",
       "default": "",
       "type": "password",
+      "userCanEdit": false,
+      "adminOnly": true
+    },
+    {
+      "key": "enableScanLaunch",
+      "name": "Enable Scan Launch",
+      "description": "When enabled, a 'Launch Scan' button appears in the Scans tab for IP address entities. Requires the Scan Option Profile to be configured.",
+      "default": false,
+      "type": "boolean",
+      "userCanEdit": false,
+      "adminOnly": true
+    },
+    {
+      "key": "scanOptionProfile",
+      "name": "Scan Option Profile",
+      "description": "The Qualys option profile title or numeric ID to use when launching scans from Polarity (e.g., 'Initial Options' or '43165'). Required when Enable Scan Launch is enabled.",
+      "default": "",
+      "type": "text",
+      "userCanEdit": false,
+      "adminOnly": true
+    },
+    {
+      "key": "scannerName",
+      "name": "Scanner Appliance Name",
+      "description": "The scanner appliance name to target when launching scans (e.g., 'scanner1'). Leave blank to use the default scanner for the target IP.",
+      "default": "",
+      "type": "text",
       "userCanEdit": false,
       "adminOnly": true
     }

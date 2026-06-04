@@ -13,9 +13,13 @@ import type { BeforeRequestHook } from 'polarity-integration-utils';
 
 import { parseErrorToReadableJSON } from './dataTransformations';
 import { getLookupResults } from './getLookupResults';
-import { validateStringOptions, validateUrlOption } from './validateOptions';
+import { validateStringOptions, validateUrlOption, validateScanOptions } from './validateOptions';
+import launchScan from './launchScan';
+import checkScanStatus from './checkScanStatus';
 
 let request: PolarityRequest;
+
+const VALID_ACTIONS = new Set(['LAUNCH_SCAN', 'CHECK_SCAN_STATUS']);
 
 const addAuth: BeforeRequestHook = async (requestOptions, userOptions) => ({
   ...requestOptions,
@@ -58,6 +62,40 @@ async function doLookup(
   }
 }
 
+async function onMessage(
+  payload: unknown,
+  options: DoLookupUserOptions,
+  context: IntegrationContext
+): Promise<unknown> {
+  const Logger = context.logger;
+  request.userOptions = options;
+
+  const msg = payload as Record<string, any>;
+  const action = msg?.action as string;
+
+  Logger.debug({ action }, 'onMessage received');
+
+  if (!action || !VALID_ACTIONS.has(action)) {
+    throw new IntegrationError(`Unknown onMessage action: ${action}`, {
+      title: 'Invalid Action'
+    });
+  }
+
+  try {
+    if (action === 'LAUNCH_SCAN') {
+      return await launchScan(msg.entityValue as string, options as any, request, Logger);
+    }
+
+    if (action === 'CHECK_SCAN_STATUS') {
+      return await checkScanStatus(msg.scanRef as string, options as any, request, Logger);
+    }
+  } catch (error) {
+    const err = parseErrorToReadableJSON(error);
+    Logger.error({ error, formattedError: err }, 'onMessage failed');
+    throw error;
+  }
+}
+
 function validateOptions(
   options: ValidateOptionsUserOptions,
   _context: IntegrationContext
@@ -69,10 +107,10 @@ function validateOptions(
   };
 
   const stringValidationErrors = validateStringOptions(stringOptionsErrorMessages, options);
-
   const urlValidationErrors = validateUrlOption(options.url.value as string);
+  const scanValidationErrors = validateScanOptions(options);
 
-  return stringValidationErrors.concat(urlValidationErrors);
+  return stringValidationErrors.concat(urlValidationErrors).concat(scanValidationErrors);
 }
 
-export { startup, doLookup, validateOptions };
+export { startup, doLookup, onMessage, validateOptions };

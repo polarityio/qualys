@@ -288,12 +288,14 @@ describe('Qualys Integration', () => {
       expect(mockRun).toHaveBeenCalledWith(
         expect.objectContaining({
           method: 'GET',
-          url: 'https://qualysapi.example.com/api/2.0/fo/asset/host/vm/detection/',
+          url: 'https://qualysapi.example.com/api/5.0/fo/asset/host/vm/detection/',
           qs: expect.objectContaining({
             action: 'list',
             ips: '10.20.30.40',
             show_asset_id: 1,
-            show_results: 1
+            show_results: 1,
+            show_qds: 1,
+            show_qds_factors: 1
           }),
           headers: { 'X-Requested-With': 'Polarity' },
           json: false
