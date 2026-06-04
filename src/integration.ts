@@ -46,6 +46,7 @@ async function doLookup(
   Logger.debug({ entities }, 'Entities');
 
   request.userOptions = options;
+  request.network = context.network;
 
   try {
     const lookupResults = await getLookupResults(entities, options, request, Logger);
@@ -69,6 +70,7 @@ async function onMessage(
 ): Promise<unknown> {
   const Logger = context.logger;
   request.userOptions = options;
+  request.network = context.network;
 
   const msg = payload as Record<string, any>;
   const action = msg?.action as string;
