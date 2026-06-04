@@ -3,6 +3,8 @@ const { flow, map, split, first, last, trim, concat, get, uniqBy } = require('lo
 const { splitOutIgnoredIps } = require('./dataTransformations');
 const createLookupResults = require('./createLookupResults');
 const queryHostDetectionListForAllEntities = require('./querying/queryHostDetectionListForAllEntities');
+const queryKnowledgeBaseForAllEntities = require('./querying/queryKnowledgeBaseForAllEntities');
+const queryScanListForAllEntities = require('./querying/queryScanListForEntities');
 const associateDataWithEntities = require('./associateDataWithEntities');
 
 const getLookupResults = async (
@@ -33,7 +35,7 @@ const getLookupResults = async (
   );
 
   const foundEntities = associateDataWithEntities(entitiesPartition, data, Logger);
-  const lookupResults = createLookupResults(foundEntities, Logger);
+  const lookupResults = createLookupResults(foundEntities, options, Logger);
 
   return lookupResults.concat(ignoredIpLookupResults);
 };
@@ -44,22 +46,43 @@ const getData = async (
   requestWithDefaults,
   Logger
 ) => {
-  const [initialHostDetections, allFoundKnowledgeBaseRecords] = await Promise.all([
-    queryHostDetectionListForAllEntities(
+  // Sequential queries — Qualys enforces concurrent call limits per subscription tier
+  const allHostDetections = uniqBy(
+    'id',
+    await queryHostDetectionListForAllEntities(
       entitiesPartition,
       options,
       requestWithDefaults,
       Logger
     )
-  ]);
+  );
 
-  const allHostDetections = flow(
-    uniqBy('id')
-  )(initialHostDetections);
+  const allFoundKnowledgeBaseRecords = await queryKnowledgeBaseForAllEntities(
+    entitiesPartition,
+    options,
+    requestWithDefaults,
+    Logger
+  );
 
-  Logger.trace({ allHostDetections }, 'All Host Detections');
+  // Scan list: fetch for IP and QID entities (gracefully skipped on failure)
+  let allScanResults = [];
+  try {
+    allScanResults = await queryScanListForAllEntities(
+      entitiesPartition,
+      options,
+      requestWithDefaults,
+      Logger
+    );
+  } catch (error) {
+    Logger.warn({ error }, 'Scan list query failed — scans tab will be empty');
+  }
 
-  return { allHostDetections, allFoundKnowledgeBaseRecords };
+  Logger.trace(
+    { allHostDetections, allFoundKnowledgeBaseRecords, allScanResults },
+    'getData results'
+  );
+
+  return { allHostDetections, allFoundKnowledgeBaseRecords, allScanResults };
 };
 
 module.exports = {

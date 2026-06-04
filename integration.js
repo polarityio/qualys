@@ -2,6 +2,8 @@ const createRequestWithDefaults = require('./src/createRequestWithDefaults');
 const { validateStringOptions, validateUrlOption } = require('./src/validateOptions');
 const { parseErrorToReadableJSON } = require('./src/dataTransformations');
 const { getLookupResults } = require('./src/getLookupResults');
+const launchScan = require('./src/launchScan');
+const checkScanStatus = require('./src/checkScanStatus');
 
 let Logger;
 let requestWithDefaults;
@@ -55,8 +57,41 @@ const validateOptions = async (options, callback) => {
   callback(null, errors);
 };
 
+const onMessage = async (payload, options, cb) => {
+  Logger.debug({ action: payload.action }, 'onMessage received');
+
+  try {
+    if (payload.action === 'LAUNCH_SCAN') {
+      const result = await launchScan(
+        payload.entityValue,
+        options,
+        requestWithDefaults,
+        Logger
+      );
+      return cb(null, result);
+    }
+
+    if (payload.action === 'CHECK_SCAN_STATUS') {
+      const result = await checkScanStatus(
+        payload.scanRef,
+        options,
+        requestWithDefaults,
+        Logger
+      );
+      return cb(null, result);
+    }
+
+    cb({ detail: `Unknown onMessage action: ${payload.action}` });
+  } catch (error) {
+    const err = parseErrorToReadableJSON(error);
+    Logger.error({ error, formattedError: err }, 'onMessage failed');
+    cb({ detail: error.message || 'onMessage failed' });
+  }
+};
+
 module.exports = {
   startup,
   validateOptions,
-  doLookup
+  doLookup,
+  onMessage
 };
