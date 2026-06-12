@@ -7,6 +7,25 @@ const queryKnowledgeBaseForAllEntities = require('./querying/queryKnowledgeBaseF
 const queryScanListForAllEntities = require('./querying/queryScanListForEntities');
 const associateDataWithEntities = require('./associateDataWithEntities');
 
+const extractQidValue = (value) => {
+  const match = value.match(/(?:QID|qid)(?:\s*:\s*|\s+)(\d{1,8})/i);
+  return match ? match[1] : value.trim();
+};
+
+const extractCustomTypeValue = (value, customTypeValueRegex) => {
+  if (customTypeValueRegex) {
+    try {
+      const re = new RegExp(customTypeValueRegex);
+      const match = value.match(re);
+      return match ? (match[1] !== undefined ? match[1] : match[0]) : value.trim();
+    } catch (_) {
+      // fall through to default
+    }
+  }
+  const match = value.match(/\d+$/);
+  return match ? match[0] : value.trim();
+};
+
 const getLookupResults = async (
   entities,
   options,
@@ -16,10 +35,17 @@ const getLookupResults = async (
   const entitiesWithCustomTypesSpecified = map(({ type, types, value, ...entity }) => {
     type = type === 'custom' ? flow(first, split('.'), last)(types) : type;
 
+    let resolvedValue = value;
+    if (type === 'qid') {
+      resolvedValue = extractQidValue(value);
+    } else if (type === 'customType') {
+      resolvedValue = extractCustomTypeValue(value, options.customTypeValueRegex && options.customTypeValueRegex.value);
+    }
+
     return {
       ...entity,
       type,
-      value: type === 'qid' ? flow(split(':'), last, trim)(value) : value
+      value: resolvedValue
     };
   }, entities);
 
