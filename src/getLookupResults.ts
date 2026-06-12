@@ -1,4 +1,4 @@
-import { flow, map, split, first, last, trim, uniqBy } from 'lodash/fp';
+import { flow, map, split, first, last, uniqBy } from 'lodash/fp';
 import type { Entity, Logger } from '@polarityio/integration-types';
 import type { PolarityRequest } from 'polarity-integration-utils';
 
@@ -20,8 +20,19 @@ export const getLookupResults = async (
       entity.type === 'custom'
         ? (flow(first, split('.'), last)(entity.types) as string)
         : entity.type;
+
     const value =
-      type === 'qid' ? (flow(split(':'), last, trim)(entity.value) as string) : entity.value;
+      type === 'qid'
+        ? (/(?:QID|qid)(?:\s*:\s*|\s+)(\d{1,8})/i.exec(entity.value)?.[1] ?? entity.value)
+        : entity.value;
+
+    if (type === 'customType') {
+      const extractRegex = new RegExp(options.customTypeValueRegex || '\\d+$');
+      const extracted = extractRegex.exec(entity.value)?.[0];
+      if (extracted) {
+        return { ...entity, type, value: extracted } as Entity;
+      }
+    }
 
     return { ...entity, type, value } as Entity;
   }, entities);
