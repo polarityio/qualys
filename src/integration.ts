@@ -13,7 +13,7 @@ import type { BeforeRequestHook } from 'polarity-integration-utils';
 
 import { parseErrorToReadableJSON } from './dataTransformations';
 import { getLookupResults } from './getLookupResults';
-import { validateStringOptions, validateUrlOption } from './validateOptions';
+import { validateStringOptions, validateUrlOption, validateCustomTypeValueRegex } from './validateOptions';
 
 let request: PolarityRequest;
 
@@ -72,7 +72,9 @@ function validateOptions(
 
   const urlValidationErrors = validateUrlOption(options.url.value as string);
 
-  return stringValidationErrors.concat(urlValidationErrors);
+  const customTypeRegexErrors = validateCustomTypeValueRegex(options);
+
+  return stringValidationErrors.concat(urlValidationErrors).concat(customTypeRegexErrors);
 }
 
 export { startup, doLookup, validateOptions };
