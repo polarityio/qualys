@@ -55,12 +55,29 @@
       "type": "password",
       "userCanEdit": false,
       "adminOnly": true
+    },
+    {
+      "key": "customTypeValueRegex",
+      "name": "Custom Type Value Regex",
+      "description": "A regular expression used to extract the numeric QID value from a matched Custom Type entity. The full regex match is used as the QID (no capture groups). Defaults to '\\d+$' which extracts trailing digits. Only applies when the Custom Type Data Type is enabled.",
+      "default": "\\d+$",
+      "type": "text",
+      "userCanEdit": false,
+      "adminOnly": true
     }
   ],
   "customTypes": [
     {
       "key": "qid",
-      "regex": "(?:QID|qid):\\s*\\d{1,8}"
+      "regex": "(?:QID|qid)(?:\\s*:\\s*|\\s+)\\d{1,8}"
+    },
+    {
+      "key": "customType",
+      "name": "Custom Type",
+      "description": "A customer-defined entity type. Set the regex to match your organization's QID format in the Polarity admin Data Types settings. The integration will extract a numeric QID from each match using the 'Custom Type Value Regex' option.",
+      "regex": "CUSTOM-\\d+",
+      "editable": true,
+      "enabled": false
     }
   ]
 }
