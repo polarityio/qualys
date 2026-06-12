@@ -43,3 +43,21 @@ export const validateUrlOption = (
 
   return otherErrors;
 };
+
+export const validateCustomTypeValueRegex = (
+  options: ValidateOptionsUserOptions,
+  otherErrors: ValidationError[] = []
+): ValidationError[] => {
+  const regexValue = options.customTypeValueRegex?.value as string | undefined;
+  if (regexValue) {
+    try {
+      new RegExp(regexValue);
+    } catch {
+      return otherErrors.concat({
+        key: 'customTypeValueRegex',
+        message: 'Invalid regular expression syntax.'
+      });
+    }
+  }
+  return otherErrors;
+};
