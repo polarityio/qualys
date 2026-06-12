@@ -33,7 +33,7 @@ const queryHostDetectionListForAllEntities = async (
   )(entities);
 
   const allHostDetectionResultForQids = await flow(
-    filter(flow(get('type'), eq('qid'))),
+    filter(flow(get('type'), or(eq('qid'), eq('customType')))),
     map(get('value')),
     cond([[size, queryHostDetectionList('qids', options, requestWithDefaults, Logger)]])
   )(entities);
