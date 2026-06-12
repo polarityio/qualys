@@ -22,6 +22,7 @@ export const QUERY_PATHS_BY_TYPE: Record<string, Record<string, string[]>> = {
     vulnerabilities: ['vulnerabilities.vulnerability.title']
   }
 };
+QUERY_PATHS_BY_TYPE.customType = QUERY_PATHS_BY_TYPE.qid;
 
 export const SEARCH_COLUMN_NAMES_BY_TYPE: Record<string, string[]> = {
   cve: ['title', 'category', 'diagnosis', 'solution', 'cves', 'vender_references'],
