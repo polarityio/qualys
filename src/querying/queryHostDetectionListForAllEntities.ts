@@ -21,7 +21,10 @@ const queryHostDetectionListForAllEntities = async (
   const ipEntities = filter(flow(get('type'), or(eq('IPv4'), eq('IPv6'))), entities);
   const ipValues = map(get('value'), ipEntities) as string[];
 
-  const qidEntities = filter(flow(get('type'), eq('qid')), entities);
+  const qidEntities = filter(
+    flow(get('type'), (t) => t === 'qid' || t === 'customType'),
+    entities
+  );
   const qidValues = map(get('value'), qidEntities) as string[];
 
   const allHostDetectionResultForIpAddresses = size(ipValues)
