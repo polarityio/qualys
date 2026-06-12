@@ -12,7 +12,13 @@
   "customTypes": [
     {
       "key": "qid",
-      "regex": "(?:QID|qid):\\s*\\d{1,8}"
+      "regex": "(?:QID|qid)(?:\\s*:\\s*|\\s+)\\d{1,8}"
+    },
+    {
+      "key": "customType",
+      "regex": "",
+      "editable": true,
+      "enabled": false
     }
   ],
   "defaultColor": "light-purple",
@@ -88,6 +94,15 @@
       "key": "scannerName",
       "name": "Scanner Appliance Name",
       "description": "The scanner appliance name to target when launching scans (e.g., 'scanner1'). Leave blank to use the default scanner for the target IP.",
+      "default": "",
+      "type": "text",
+      "userCanEdit": false,
+      "adminOnly": true
+    },
+    {
+      "key": "customTypeValueRegex",
+      "name": "Custom Type Value Regex",
+      "description": "When the Custom Type entity type is enabled, this regex is used to extract the QID numeric value from the matched entity string. Leave blank to extract the last sequence of digits found in the match.",
       "default": "",
       "type": "text",
       "userCanEdit": false,
