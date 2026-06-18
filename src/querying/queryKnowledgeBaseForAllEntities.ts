@@ -123,9 +123,7 @@ const KB_RECORD_FORMAT: Record<string, any> = {
     process: (cveList: any) => {
       if (!cveList) return null;
       const items = processPossibleList(false)(cveList.cve || cveList) as any[];
-      return JSON.stringify(
-        (items || []).map((c: any) => ({ name: c.id || c, url: c.url || null }))
-      );
+      return JSON.stringify((items || []).map((c: any) => ({ id: c.id || c, url: c.url || null })));
     }
   },
   cvss_base: 'cvss.base',
