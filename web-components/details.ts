@@ -815,6 +815,10 @@ export class DetailsComponent extends IntegrationComponentBase {
     const value = field.isDate ? formatDate(field.value) : field.value;
     const copyStateKey = `${fieldIndex}-${field.label}-${subIndex}`;
 
+    if (field.isKeyValueObject) {
+      return this._renderKeyValueObject(field);
+    }
+
     if (field.fieldIsCopyable) {
       return html`
         <div class="copyable-field">
