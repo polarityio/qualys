@@ -103,6 +103,7 @@ export class DetailsComponent extends IntegrationComponentBase {
         font-size: var(--pi-size-font-base, 0.8125rem);
         color: var(--pi-color-font-primary, #fafaff);
         line-height: var(--pi-line-height-base, 1.4);
+        --pi-card-background: var(--pi-color-background-application-3, #222837);
       }
 
       .copy-btn-container {
