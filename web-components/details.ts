@@ -439,9 +439,9 @@ export class DetailsComponent extends IntegrationComponentBase {
                         slot="tab"
                         panel=${tabKey}
                         ?active=${idx === activeIndex}
-                        .count=${tabKey === 'scans'
-                          ? this._countScanGroups(d[tabKey] as DisplayField[])
-                          : (d[tabKey] as DisplayField[]).length}
+                        .count=${this._countTabRecords(
+                          d[tabKey] as DisplayField[] | DisplayField[][]
+                        )}
                       >
                         ${humanizeTabKey(tabKey)}
                       </pi-tab>
@@ -561,8 +561,12 @@ export class DetailsComponent extends IntegrationComponentBase {
     `;
   }
 
-  private _countScanGroups(fields: DisplayField[]): number {
-    return fields.filter((f) => f.isNewSectionLineBreak).length;
+  private _countTabRecords(fields: DisplayField[] | DisplayField[][]): number {
+    if (!fields?.length) return 0;
+    // Grouped format (CVE knowledgeBaseRecords) — each inner array is one record
+    if (Array.isArray(fields[0])) return (fields as DisplayField[][]).length;
+    // Flat format — count isNewSectionLineBreak markers (one per record)
+    return (fields as DisplayField[]).filter((f) => f.isNewSectionLineBreak).length;
   }
 
   private _renderScansContent(fields: DisplayField[]) {
