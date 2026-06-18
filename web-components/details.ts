@@ -592,15 +592,17 @@ export class DetailsComponent extends IntegrationComponentBase {
             Showing first ${MAX_SCANS} of ${totalScans} scans
           </div>`
         : nothing}
-      <div class="scan-list">
-        ${visibleGroups.map(
-          (group) => html`
-            <div class="scan-item">
-              ${group.map((field, idx) => this._renderDisplayField(field, idx))}
-            </div>
-          `
-        )}
-      </div>
+      <pi-show-more .maxLines=${600}>
+        <div class="scan-list">
+          ${visibleGroups.map(
+            (group) => html`
+              <div class="scan-item">
+                ${group.map((field, idx) => this._renderDisplayField(field, idx))}
+              </div>
+            `
+          )}
+        </div>
+      </pi-show-more>
     `;
   }
 
