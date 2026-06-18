@@ -271,9 +271,13 @@ export class DetailsComponent extends IntegrationComponentBase {
         margin-top: 0;
       }
 
-      .kv-object-section h3 {
+      .kv-object-section h2 {
         margin-top: 0;
         margin-bottom: var(--pi-size-spacing-xxs, 2px);
+      }
+
+      .kv-object-section-values {
+        margin-left: var(--pi-size-spacing-sm, 8px);
       }
 
       .scan-count-message {
@@ -894,10 +898,12 @@ export class DetailsComponent extends IntegrationComponentBase {
     }
     return html`
       <div class="kv-object-section">
-        ${field.label ? html`<h3>${field.label}</h3>` : nothing}
-        ${entries.map(
-          ([key, val]) => html`<pi-key-value key=${key} value=${val ?? ''}></pi-key-value>`
-        )}
+        ${field.label ? html`<h2>${field.label}</h2>` : nothing}
+        <div class="kv-object-section-values">
+          ${entries.map(
+            ([key, val]) => html`<pi-key-value key=${key} value=${val ?? ''}></pi-key-value>`
+          )}
+        </div>
       </div>
     `;
   }
