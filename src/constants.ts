@@ -35,6 +35,7 @@ export interface DisplayFormatEntry {
   isDate?: boolean;
   isList?: boolean;
   isListOfLinks?: boolean;
+  isKeyValueObject?: boolean;
   isHtml?: boolean;
   isNewSectionLineBreak?: boolean;
   indent?: number;
@@ -69,7 +70,7 @@ export const HOST_DETECTION_DISPLAY_FORMAT: DisplayFormat = {
       severity: 'Severity',
       qds: 'QDS Score',
       qds_severity: 'QDS Severity',
-      qds_factors: 'QDS Factors',
+      qds_factors: { label: 'QDS Factors', isKeyValueObject: true },
       status: 'Status',
       port: 'Port',
       protocol: 'Protocol',

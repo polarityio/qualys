@@ -11,6 +11,7 @@ interface DisplayField {
   isDate?: boolean;
   isList?: boolean;
   isListOfLinks?: boolean;
+  isKeyValueObject?: boolean;
   isHtml?: boolean;
   isTextBlock?: boolean;
   isNewSectionLineBreak?: boolean;
@@ -662,6 +663,9 @@ export class DetailsComponent extends IntegrationComponentBase {
     if (field.isListOfLinks) {
       return this._renderListOfLinks(field);
     }
+    if (field.isKeyValueObject) {
+      return this._renderKeyValueObject(field);
+    }
     if (field.isHtml) {
       return this._renderHtmlField(field);
     }
@@ -866,6 +870,24 @@ export class DetailsComponent extends IntegrationComponentBase {
         ${this._copiedStates[copyStateKey]
           ? html`<span class="copied-label">Copied</span>`
           : nothing}
+      </div>
+    `;
+  }
+
+  private _renderKeyValueObject(field: DisplayField) {
+    const obj = field.value as Record<string, string> | null | undefined;
+    if (!obj || typeof obj !== 'object') {
+      return nothing;
+    }
+    const entries = Object.entries(obj);
+    if (entries.length === 0) {
+      return nothing;
+    }
+    return html`
+      <div>
+        ${entries.map(
+          ([key, val]) => html`<pi-key-value key=${key} value=${val ?? ''}></pi-key-value>`
+        )}
       </div>
     `;
   }
