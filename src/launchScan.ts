@@ -1,7 +1,7 @@
 import { get } from 'lodash/fp';
 import type { Logger } from '@polarityio/integration-types';
 import type { PolarityRequest } from 'polarity-integration-utils';
-import { IntegrationError } from 'polarity-integration-utils';
+import { IntegrationError, ApiRequestError } from 'polarity-integration-utils';
 
 import { xmlToJson } from './dataTransformations';
 
@@ -51,15 +51,33 @@ const launchScan = async (
 
   Logger.debug({ scanTitle, formData }, 'Launching Qualys scan');
 
-  const response = await request.run({
-    method: 'POST',
-    url: `${options.url}/api/2.0/fo/scan/`,
-    form: formData,
-    headers: { 'X-Requested-With': 'Polarity' },
-    json: false
-  });
+  let responseBody: string;
+  try {
+    const response = await request.run({
+      method: 'POST',
+      url: `${options.url}/api/2.0/fo/scan/`,
+      form: formData,
+      headers: { 'X-Requested-With': 'Polarity' },
+      json: false
+    });
+    responseBody = (response!.body as string) || '';
+  } catch (err) {
+    if (err instanceof ApiRequestError && typeof (err as any).meta?.body === 'string') {
+      const errorXml = (err as any).meta.body as string;
+      const errorJson = await xmlToJson(errorXml, Logger);
+      const errorText = (get('simple_return.response.text', errorJson) as string) || '';
+      if (errorText) {
+        throw new IntegrationError(errorText, {
+          title: 'Scan Launch Failed',
+          help: 'Check that the scan option profile ID or name is valid in your Qualys account.',
+          cause: err
+        });
+      }
+    }
+    throw err;
+  }
 
-  const responseXml = (response!.body as string) || '';
+  const responseXml = responseBody;
   const json = await xmlToJson(responseXml, Logger);
   const responseText = (get('simple_return.response.text', json) as string) || '';
 
