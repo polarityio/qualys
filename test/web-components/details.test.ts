@@ -343,4 +343,68 @@ describe('Qualys DetailsComponent', () => {
     expect(html).toContain('12345');
     expect(html).toContain('67890');
   });
+
+  it('should render scan results as bordered items without hr separators', async () => {
+    el = await renderComponent(
+      createBlock({
+        tabKeys: ['scans'],
+        scans: [
+          { label: 'Scan One', value: 'Scan One', isTitle: true },
+          { label: 'Status', value: 'Finished' },
+          { isNewSectionLineBreak: true },
+          { label: 'Scan Two', value: 'Scan Two', isTitle: true },
+          { label: 'Status', value: 'Running' },
+          { isNewSectionLineBreak: true }
+        ]
+      })
+    );
+
+    const html = getShadowHTML(el);
+    expect(html).toContain('scan-item');
+    expect(html).toContain('Scan One');
+    expect(html).toContain('Scan Two');
+    expect(html).not.toContain('section-break');
+  });
+
+  it('should show a count message when there are more than 10 scans', async () => {
+    const scanFields: Record<string, unknown>[] = [];
+    for (let i = 1; i <= 12; i++) {
+      scanFields.push({ label: `Scan ${i}`, value: `Scan ${i}`, isTitle: true });
+      scanFields.push({ label: 'Status', value: 'Finished' });
+      scanFields.push({ isNewSectionLineBreak: true });
+    }
+
+    el = await renderComponent(
+      createBlock({
+        tabKeys: ['scans'],
+        scans: scanFields
+      })
+    );
+
+    const html = getShadowHTML(el);
+    expect(html).toContain('scan-count-message');
+    expect(html).toContain('10 of');
+    expect(html).toContain('Scan 1');
+    expect(html).toContain('Scan 10');
+    expect(html).not.toContain('Scan 11');
+    expect(html).not.toContain('Scan 12');
+  });
+
+  it('should not show a count message when there are 10 or fewer scans', async () => {
+    const scanFields: Record<string, unknown>[] = [];
+    for (let i = 1; i <= 5; i++) {
+      scanFields.push({ label: `Scan ${i}`, value: `Scan ${i}`, isTitle: true });
+      scanFields.push({ isNewSectionLineBreak: true });
+    }
+
+    el = await renderComponent(
+      createBlock({
+        tabKeys: ['scans'],
+        scans: scanFields
+      })
+    );
+
+    const html = getShadowHTML(el);
+    expect(html).not.toContain('Showing first');
+  });
 });

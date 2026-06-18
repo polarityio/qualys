@@ -249,6 +249,27 @@ export class DetailsComponent extends IntegrationComponentBase {
         border-bottom: 1px solid var(--pi-color-border-container, #606470);
         margin-bottom: var(--pi-size-spacing-sm, 8px);
       }
+
+      .scan-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--pi-size-spacing-xs, 4px);
+      }
+
+      .scan-item {
+        border: 1px solid var(--pi-color-border-container, #606470);
+        border-radius: var(--pi-size-radius-base, 4px);
+        padding: var(--pi-size-spacing-sm, 8px);
+        display: flex;
+        flex-direction: column;
+        gap: var(--pi-size-spacing-xxs, 2px);
+      }
+
+      .scan-count-message {
+        font-size: var(--pi-size-font-sm, 0.875rem);
+        color: var(--pi-color-font-secondary, #cdced6);
+        margin-bottom: var(--pi-size-spacing-xs, 4px);
+      }
     `
   ];
 
@@ -445,9 +466,16 @@ export class DetailsComponent extends IntegrationComponentBase {
       `;
     }
 
+    if (tabKey === 'scans') {
+      return html`
+        <div class="tab-content">
+          ${this._renderScanActions()} ${this._renderScansContent(fields as DisplayField[])}
+        </div>
+      `;
+    }
+
     return html`
       <div class="tab-content">
-        ${tabKey === 'scans' ? this._renderScanActions() : nothing}
         ${(fields as DisplayField[]).map((field, idx) => this._renderDisplayField(field, idx))}
       </div>
     `;
@@ -523,6 +551,45 @@ export class DetailsComponent extends IntegrationComponentBase {
               .message=${this._scanError}
             ></pi-error>`
           : nothing}
+      </div>
+    `;
+  }
+
+  private _renderScansContent(fields: DisplayField[]) {
+    const MAX_SCANS = 10;
+
+    // Group flat fields into per-scan arrays (split on isNewSectionLineBreak)
+    const groups: DisplayField[][] = [];
+    let current: DisplayField[] = [];
+    for (const field of fields) {
+      if (field.isNewSectionLineBreak) {
+        if (current.length) {
+          groups.push(current);
+          current = [];
+        }
+      } else {
+        current.push(field);
+      }
+    }
+    if (current.length) groups.push(current);
+
+    const totalScans = groups.length;
+    const visibleGroups = groups.slice(0, MAX_SCANS);
+
+    return html`
+      ${totalScans > MAX_SCANS
+        ? html`<div class="scan-count-message">
+            Showing first ${MAX_SCANS} of ${totalScans} scans
+          </div>`
+        : nothing}
+      <div class="scan-list">
+        ${visibleGroups.map(
+          (group) => html`
+            <div class="scan-item">
+              ${group.map((field, idx) => this._renderDisplayField(field, idx))}
+            </div>
+          `
+        )}
       </div>
     `;
   }
