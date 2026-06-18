@@ -764,13 +764,15 @@ export class DetailsComponent extends IntegrationComponentBase {
     return html`
       <div class="list-section">
         <h3>${field.label}</h3>
-        <div class="list-items">
-          ${items.map((itemFields, itemIdx) =>
-            field.collapsibleListItems
-              ? this._renderCollapsibleListItem(field, fieldIndex, itemFields, itemIdx)
-              : this._renderFlatListItem(itemFields, fieldIndex, itemIdx)
-          )}
-        </div>
+        <pi-show-more max-lines="20">
+          <div class="list-items">
+            ${items.map((itemFields, itemIdx) =>
+              field.collapsibleListItems
+                ? this._renderCollapsibleListItem(field, fieldIndex, itemFields, itemIdx)
+                : this._renderFlatListItem(itemFields, fieldIndex, itemIdx)
+            )}
+          </div>
+        </pi-show-more>
       </div>
     `;
   }
