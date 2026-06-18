@@ -106,8 +106,10 @@ export class DetailsComponent extends IntegrationComponentBase {
       }
 
       .copy-btn-container {
-        display: flex;
-        justify-content: flex-end;
+        position: absolute;
+        right: 10px;
+        top: 7px;
+        z-index: 1;
       }
 
       .tab-content {
