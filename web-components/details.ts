@@ -434,13 +434,33 @@ export class DetailsComponent extends IntegrationComponentBase {
     `;
   }
 
-  private _renderTabContent(fields: DisplayField[], tabKey?: string) {
+  private _renderTabContent(fields: DisplayField[] | DisplayField[][], tabKey?: string) {
     if (!fields?.length) return nothing;
+
+    if (Array.isArray(fields[0])) {
+      return html`
+        <div class="tab-content">
+          ${(fields as DisplayField[][]).map((group) => this._renderKnowledgeBaseCard(group))}
+        </div>
+      `;
+    }
+
     return html`
       <div class="tab-content">
         ${tabKey === 'scans' ? this._renderScanActions() : nothing}
-        ${fields.map((field, idx) => this._renderDisplayField(field, idx))}
+        ${(fields as DisplayField[]).map((field, idx) => this._renderDisplayField(field, idx))}
       </div>
+    `;
+  }
+
+  private _renderKnowledgeBaseCard(group: DisplayField[]) {
+    const titleField = group.find((f) => f.isTitle);
+    const title = titleField?.value || titleField?.label || '';
+    const bodyFields = group.filter((f) => !f.isTitle && !f.isNewSectionLineBreak);
+    return html`
+      <pi-card card-title=${title} collapsible expanded data-pi-card>
+        ${bodyFields.map((field, idx) => this._renderDisplayField(field, idx))}
+      </pi-card>
     `;
   }
 

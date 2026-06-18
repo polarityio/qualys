@@ -71,7 +71,11 @@ const formatQueryResult = (
   if (size(result.knowledgeBaseRecords)) {
     const isCve = (entity as any).type === 'cve';
     const displayFormat = isCve ? CVE_DISPLAY_FORMAT : KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT;
-    formatted.knowledgeBaseRecords = getDisplayResults(displayFormat, result.knowledgeBaseRecords);
+    formatted.knowledgeBaseRecords = getDisplayResults(
+      displayFormat,
+      result.knowledgeBaseRecords,
+      isCve
+    );
   }
 
   if (size(result.scans)) {

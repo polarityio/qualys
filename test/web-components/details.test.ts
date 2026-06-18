@@ -316,4 +316,31 @@ describe('Qualys DetailsComponent', () => {
     expect(html).toContain('CVE-2024-0002');
     expect(html).toContain('pi-external-link');
   });
+
+  it('should render CVE knowledge base records as pi-cards with QID title', async () => {
+    el = await renderComponent(
+      createBlock({
+        tabKeys: ['knowledgeBaseRecords'],
+        knowledgeBaseRecords: [
+          [
+            { value: 'SQL Injection Vulnerability', isTitle: true },
+            { label: 'QID', value: '12345', fieldIsCopyable: true, shouldCopyFieldLabel: true },
+            { label: 'Severity Level', value: '5' }
+          ],
+          [
+            { value: 'Buffer Overflow Exploit', isTitle: true },
+            { label: 'QID', value: '67890', fieldIsCopyable: true, shouldCopyFieldLabel: true },
+            { label: 'Severity Level', value: '3' }
+          ]
+        ]
+      })
+    );
+
+    const html = getShadowHTML(el);
+    expect(html).toContain('pi-card');
+    expect(html).toContain('SQL Injection Vulnerability');
+    expect(html).toContain('Buffer Overflow Exploit');
+    expect(html).toContain('12345');
+    expect(html).toContain('67890');
+  });
 });
