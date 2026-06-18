@@ -592,7 +592,7 @@ export class DetailsComponent extends IntegrationComponentBase {
             Showing first ${MAX_SCANS} of ${totalScans} scans
           </div>`
         : nothing}
-      <pi-show-more .maxLines=${600}>
+      <pi-show-more max-lines="10">
         <div class="scan-list">
           ${visibleGroups.map(
             (group) => html`
