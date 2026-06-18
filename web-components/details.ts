@@ -265,6 +265,10 @@ export class DetailsComponent extends IntegrationComponentBase {
         gap: var(--pi-size-spacing-xxs, 2px);
       }
 
+      .scan-item h2 {
+        margin-top: 0;
+      }
+
       .scan-count-message {
         font-size: var(--pi-size-font-sm, 0.875rem);
         color: var(--pi-color-font-secondary, #cdced6);
@@ -435,7 +439,9 @@ export class DetailsComponent extends IntegrationComponentBase {
                         slot="tab"
                         panel=${tabKey}
                         ?active=${idx === activeIndex}
-                        .count=${(d[tabKey] as DisplayField[]).length}
+                        .count=${tabKey === 'scans'
+                          ? this._countScanGroups(d[tabKey] as DisplayField[])
+                          : (d[tabKey] as DisplayField[]).length}
                       >
                         ${humanizeTabKey(tabKey)}
                       </pi-tab>
@@ -555,6 +561,10 @@ export class DetailsComponent extends IntegrationComponentBase {
     `;
   }
 
+  private _countScanGroups(fields: DisplayField[]): number {
+    return fields.filter((f) => f.isNewSectionLineBreak).length;
+  }
+
   private _renderScansContent(fields: DisplayField[]) {
     const MAX_SCANS = 10;
 
@@ -620,7 +630,7 @@ export class DetailsComponent extends IntegrationComponentBase {
   }
 
   private _renderTitle(field: DisplayField) {
-    const indentClass = `indent-${field.indent || 0}`;
+    const indentClass = field.indent ? `indent-${field.indent}` : '';
     const labelText = field.capitalize
       ? capitalizeStr(field.label || field.value || '')
       : field.label || field.value || '';
