@@ -16,7 +16,7 @@ export interface LaunchScanResult {
 
 /**
  * Launch a Qualys VM scan for a target IP address.
- * POST /api/2.0/fo/scan/?action=launch
+ * POST /api/3.0/fo/scan/?action=launch
  */
 const launchScan = async (
   entityValue: string,
@@ -55,7 +55,7 @@ const launchScan = async (
   try {
     const response = await request.run({
       method: 'POST',
-      url: `${options.url}/api/2.0/fo/scan/`,
+      url: `${options.url}/api/3.0/fo/scan/`,
       form: formData,
       headers: { 'X-Requested-With': 'Polarity' },
       json: false
