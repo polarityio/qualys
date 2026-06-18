@@ -271,6 +271,11 @@ export class DetailsComponent extends IntegrationComponentBase {
         margin-top: 0;
       }
 
+      .kv-object-section h3 {
+        margin-top: 0;
+        margin-bottom: var(--pi-size-spacing-xxs, 2px);
+      }
+
       .scan-count-message {
         font-size: var(--pi-size-font-sm, 0.875rem);
         color: var(--pi-color-font-secondary, #cdced6);
@@ -888,7 +893,8 @@ export class DetailsComponent extends IntegrationComponentBase {
       return nothing;
     }
     return html`
-      <div>
+      <div class="kv-object-section">
+        ${field.label ? html`<h3>${field.label}</h3>` : nothing}
         ${entries.map(
           ([key, val]) => html`<pi-key-value key=${key} value=${val ?? ''}></pi-key-value>`
         )}
