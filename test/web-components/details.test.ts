@@ -116,7 +116,7 @@ describe('Qualys DetailsComponent', () => {
     const html = getShadowHTML(el);
     expect(html).toContain('IP Address');
     expect(html).toContain('10.0.0.1');
-    expect(html).toContain('<h2');
+    expect(html).toContain('pi-card');
   });
 
   it('should render date fields with formatted dates', async () => {
@@ -194,7 +194,7 @@ describe('Qualys DetailsComponent', () => {
     expect(html).toContain('pi-copy-button');
   });
 
-  it('should render section breaks for isNewSectionLineBreak fields', async () => {
+  it('should render hostDetection records as pi-cards grouped by host', async () => {
     el = await renderComponent(
       createBlock({
         tabKeys: ['hostDetections'],
@@ -207,7 +207,10 @@ describe('Qualys DetailsComponent', () => {
     );
 
     const html = getShadowHTML(el);
-    expect(html).toContain('section-break');
+    expect(html).toContain('pi-card');
+    expect(html).toContain('Field1');
+    expect(html).toContain('Field2');
+    expect(html).not.toContain('section-break');
   });
 
   it('should not render tabs when there is only one visible tab', async () => {
@@ -283,6 +286,7 @@ describe('Qualys DetailsComponent', () => {
     );
 
     const html = getShadowHTML(el);
+    expect(html).toContain('pi-card');
     expect(html).toContain('pi-external-link');
     expect(html).toContain('https://example.com/host/1');
   });

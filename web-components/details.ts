@@ -480,6 +480,14 @@ export class DetailsComponent extends IntegrationComponentBase {
       `;
     }
 
+    if (tabKey === 'hostDetections') {
+      return html`
+        <div class="tab-content">
+          ${this._renderHostDetectionsContent(fields as DisplayField[])}
+        </div>
+      `;
+    }
+
     return html`
       <div class="tab-content">
         ${(fields as DisplayField[]).map((field, idx) => this._renderDisplayField(field, idx))}
@@ -495,6 +503,39 @@ export class DetailsComponent extends IntegrationComponentBase {
       <pi-card card-title=${title} collapsible expanded data-pi-card>
         ${bodyFields.map((field, idx) => this._renderDisplayField(field, idx))}
       </pi-card>
+    `;
+  }
+
+  private _renderHostDetectionsContent(fields: DisplayField[]) {
+    // Group flat fields into per-host arrays (split on isNewSectionLineBreak)
+    const groups: DisplayField[][] = [];
+    let current: DisplayField[] = [];
+    for (const field of fields) {
+      if (field.isNewSectionLineBreak) {
+        if (current.length) {
+          groups.push(current);
+          current = [];
+        }
+      } else {
+        current.push(field);
+      }
+    }
+    if (current.length) groups.push(current);
+
+    return html`
+      ${groups.map((group) => {
+        const titleField = group.find((f) => f.isTitle);
+        const title = titleField?.showLabelAndValue
+          ? `${titleField.label}: ${titleField.value}`
+          : titleField?.value || titleField?.label || 'Host';
+        // If the title has a displayLink, keep it in the body so it renders as pi-external-link
+        const bodyFields = group.filter((f) => !f.isTitle || f.displayLink);
+        return html`
+          <pi-card card-title=${title} collapsible expanded data-pi-card>
+            ${bodyFields.map((field, idx) => this._renderDisplayField(field, idx))}
+          </pi-card>
+        `;
+      })}
     `;
   }
 
