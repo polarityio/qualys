@@ -177,9 +177,9 @@ describe('Qualys DetailsComponent', () => {
     );
 
     const html = getShadowHTML(el);
+    expect(html).toContain('pi-section-header');
     expect(html).toContain('Diagnosis');
-    // HTML content is collapsed by default
-    expect(html).not.toContain('This is a vulnerability description');
+    expect(html).toContain('This is a vulnerability description');
   });
 
   it('should render the copy button', async () => {

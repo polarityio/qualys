@@ -538,7 +538,7 @@ export class DetailsComponent extends IntegrationComponentBase {
       return this._renderListOfLinks(field);
     }
     if (field.isHtml) {
-      return this._renderHtmlField(field, fieldIndex);
+      return this._renderHtmlField(field);
     }
     if (field.isList) {
       return this._renderList(field, fieldIndex);
@@ -611,21 +611,11 @@ export class DetailsComponent extends IntegrationComponentBase {
     `;
   }
 
-  private _renderHtmlField(field: DisplayField, fieldIndex: number) {
-    const stateKey = `${fieldIndex}-0-${field.label}`;
-    const isExpanded = !!this._expandedStates[stateKey];
+  private _renderHtmlField(field: DisplayField) {
     return html`
-      <div>
-        <button
-          class="expandable-title"
-          @click=${() => this._toggleExpanded(stateKey)}
-          aria-expanded=${isExpanded}
-        >
-          <span class="expandable-title-text">${field.label}</span>
-          <pi-icon .icon=${isExpanded ? faAngleUp : faAngleDown} size="sm"></pi-icon>
-        </button>
-        ${isExpanded ? html`<div class="html-content">${unsafeHTML(field.value)}</div>` : nothing}
-      </div>
+      <pi-section-header title=${field.label || ''} show-collapse-button is-collapsed>
+        <div class="html-content">${unsafeHTML(field.value)}</div>
+      </pi-section-header>
     `;
   }
 
