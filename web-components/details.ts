@@ -123,6 +123,10 @@ export class DetailsComponent extends IntegrationComponentBase {
         padding-top: var(--pi-size-spacing-xs, 4px);
       }
 
+      .list-of-links {
+        margin-bottom: var(--pi-size-spacing-sm, 8px);
+      }
+
       .field-row {
         display: flex;
         align-items: baseline;
@@ -593,7 +597,7 @@ export class DetailsComponent extends IntegrationComponentBase {
     const indentClass = `indent-${field.indent || 0}`;
     const links = field.value as Array<{ url: string; id: string; capitalize?: boolean }>;
     return html`
-      <div class="field-row ${indentClass}">
+      <div class="field-row list-of-links ${indentClass}">
         <span class="kv-key">${field.label}:</span>
         <span class="link-list">
           ${links.map(
