@@ -21,11 +21,23 @@ export interface ScanStatus {
  * GET /api/3.0/fo/scan/?action=list&scan_ref=<ref>&show_status=1
  */
 const checkScanStatus = async (
-  scanRef: string,
+  rawScanRef: string,
   options: Record<string, any>,
   request: PolarityRequest,
   Logger: Logger
 ): Promise<ScanStatus> => {
+  // Sanitize: extract just the valid scan/XXXXX.XXXXX portion in case the value
+  // was persisted with leading corruption (e.g. from xml2js charkey collision).
+  const scanRefMatch = (rawScanRef || '').match(/scan\/\d+\.\d+/);
+  const scanRef = scanRefMatch ? scanRefMatch[0] : rawScanRef.trim();
+
+  if (!scanRef || !/^scan\/\d+\.\d+$/.test(scanRef)) {
+    throw new IntegrationError(`Invalid scan reference: "${rawScanRef}"`, {
+      title: 'Invalid Scan Reference',
+      help: 'The scan reference must match the format scan/XXXXXXXXXX.XXXXX.'
+    });
+  }
+
   Logger.debug({ scanRef }, 'Checking scan status');
 
   let responseBody: string;
