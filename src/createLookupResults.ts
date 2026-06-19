@@ -21,7 +21,10 @@ const createLookupResults = (
     const formattedQueryResult = formatQueryResult(results, entity, options);
     const lookupResult: LookupResult = {
       entity,
-      displayValue: (entity.type as string) === 'qid' ? `QID: ${entity.value}` : entity.value,
+      displayValue:
+        (entity.type as string) === 'qid' || (entity.type as string) === 'customType'
+          ? `QID: ${entity.value}`
+          : entity.value,
       data: formattedQueryResult
         ? {
             summary: createSummary(entity, results),

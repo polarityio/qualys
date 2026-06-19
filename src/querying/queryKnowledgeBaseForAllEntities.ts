@@ -6,7 +6,8 @@ import {
   parseErrorToReadableJSON,
   processResultWithProcessingFormat,
   processPossibleList,
-  xmlToJson
+  xmlToJson,
+  or
 } from '../dataTransformations';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -24,7 +25,10 @@ const queryKnowledgeBaseForAllEntities = async (
   Logger: Logger
 ): Promise<any[]> => {
   const cveEntities = filter(flow(get('type'), eq('cve')), entities) as Entity[];
-  const qidEntities = filter(flow(get('type'), eq('qid')), entities) as Entity[];
+  const qidEntities = filter(
+    flow(get('type'), or(eq('qid'), eq('customType'))),
+    entities
+  ) as Entity[];
   const qidValues = map(get('value'), qidEntities) as string[];
 
   const kbResultsForCves = size(cveEntities)

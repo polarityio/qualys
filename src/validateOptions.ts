@@ -44,6 +44,25 @@ export const validateUrlOption = (
   return otherErrors;
 };
 
+export const validateCustomTypeValueRegex = (
+  options: ValidateOptionsUserOptions,
+  otherErrors: ValidationError[] = []
+): ValidationError[] => {
+  const regexValue = options.customTypeValueRegex?.value as string | undefined;
+  if (!regexValue || regexValue.trim() === '') return otherErrors;
+
+  try {
+    new RegExp(regexValue);
+  } catch (_) {
+    return otherErrors.concat({
+      key: 'customTypeValueRegex',
+      message: 'The Custom Type Regex is not a valid regular expression.'
+    });
+  }
+
+  return otherErrors;
+};
+
 export const validateScanOptions = (
   options: ValidateOptionsUserOptions,
   otherErrors: ValidationError[] = []

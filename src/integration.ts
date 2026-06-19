@@ -13,7 +13,12 @@ import type { BeforeRequestHook } from 'polarity-integration-utils';
 
 import { parseErrorToReadableJSON } from './dataTransformations';
 import { getLookupResults } from './getLookupResults';
-import { validateStringOptions, validateUrlOption, validateScanOptions } from './validateOptions';
+import {
+  validateStringOptions,
+  validateUrlOption,
+  validateScanOptions,
+  validateCustomTypeValueRegex
+} from './validateOptions';
 import launchScan from './launchScan';
 import checkScanStatus from './checkScanStatus';
 
@@ -111,8 +116,12 @@ function validateOptions(
   const stringValidationErrors = validateStringOptions(stringOptionsErrorMessages, options);
   const urlValidationErrors = validateUrlOption(options.url.value as string);
   const scanValidationErrors = validateScanOptions(options);
+  const customTypeRegexErrors = validateCustomTypeValueRegex(options);
 
-  return stringValidationErrors.concat(urlValidationErrors).concat(scanValidationErrors);
+  return stringValidationErrors
+    .concat(urlValidationErrors)
+    .concat(scanValidationErrors)
+    .concat(customTypeRegexErrors);
 }
 
 export { startup, doLookup, onMessage, validateOptions };
