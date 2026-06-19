@@ -21,14 +21,17 @@ To learn more about Qualys, visit the [official website](https://www.qualys.com/
 
 ## QID Entity Type
 
-The built-in **Qualys ID (QID)** data type automatically recognizes QID strings in the following formats:
+The built-in **Qualys ID (QID)** data type automatically recognizes QID strings in the following formats (case-insensitive):
 
 | Format | Example |
 |---|---|
+| `QID<number>` (no separator) | `QID12345` |
 | `QID:<number>` | `QID:12345` |
 | `QID: <number>` | `QID: 12345` |
-| `QID <number>` | `QID 12345` |
 | `QID : <number>` | `QID : 12345` |
+| `QID-<number>` | `QID-12345` |
+| `QID_<number>` | `QID_12345` |
+| `QID <number>` | `QID 12345` |
 | `qid:<number>` (lowercase) | `qid:38623` |
 
 The numeric QID value is extracted automatically and used for the API lookup.
