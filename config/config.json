@@ -10,7 +10,25 @@
     "IPv4",
     "IPv6",
     "domain",
-    "cve"
+    "cve",
+    {
+      "type": "custom",
+      "name":  "Qualys ID (QID)",
+      "description": "A unique, proprietary numeric identifier assigned by Qualys to every vulnerability, misconfiguration, or security threat in their vulnerability catalog",
+      "key": "qid",
+      "regex": "(?:QID|qid)(?:\\s*:\\s*|\\s+)\\d{1,8}",
+      "editable": false,
+      "enabled": true
+    },
+    {
+      "type": "custom",
+      "name": "Custom QID Value",
+      "description": "Match custom QID values and extract the numeric QID via the \"Custom QID Value Regex\" integration option",
+      "key": "customType",
+      "regex": "",
+      "editable": true,
+      "enabled": false
+    }
   ],
   "logging": {
     "level": "info"
@@ -87,24 +105,12 @@
     },
     {
       "key": "customTypeValueRegex",
-      "name": "Custom Type Value Regex",
-      "description": "When the Custom Type entity type is enabled, this regex is used to extract the QID numeric value from the matched entity string. Leave blank to extract the last sequence of digits found in the match.",
+      "name": "Custom QID Value Regex",
+      "description": "When the Custom QID Value data type is enabled, this regex is used to extract the QID numeric value from the matched entity string. Leave blank to extract the last sequence of digits found in the match.",
       "default": "",
       "type": "text",
       "userCanEdit": false,
       "adminOnly": true
-    }
-  ],
-  "customTypes": [
-    {
-      "key": "qid",
-      "regex": "(?:QID|qid)(?:\\s*:\\s*|\\s+)\\d{1,8}"
-    },
-    {
-      "key": "customType",
-      "regex": "",
-      "editable": true,
-      "enabled": false
     }
   ]
 }
