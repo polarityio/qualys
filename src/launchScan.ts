@@ -84,11 +84,8 @@ const launchScan = async (
   const rawItems = get('simple_return.response.item_list.item', json);
   const items: any[] = Array.isArray(rawItems) ? rawItems : rawItems ? [rawItems] : [];
 
-  const scanRef =
-    (items.find((i: any) => ((i.key as string) || '').toUpperCase() === 'REFERENCE') || {}).value ||
-    '';
-  const scanId =
-    (items.find((i: any) => ((i.key as string) || '').toUpperCase() === 'ID') || {}).value || '';
+  const scanRef = extractItemValue(items, 'REFERENCE');
+  const scanId = extractItemValue(items, 'ID');
 
   if (!responseText.toLowerCase().includes('launched')) {
     const errorText = responseText || 'No confirmation received from Qualys.';
@@ -106,6 +103,19 @@ const getOptionValue = (opt: any): string => {
   if (opt === null || opt === undefined) return '';
   if (typeof opt === 'object' && 'value' in opt) return (opt.value as string) || '';
   return String(opt);
+};
+
+/**
+ * xml2js with charkey:'value' conflicts with Qualys <ITEM><VALUE> element names,
+ * producing arrays that mix whitespace text nodes with the real value.
+ * Flatten to a string and extract clean content.
+ */
+const extractItemValue = (items: any[], keyName: string): string => {
+  const item = items.find((i: any) => ((i.key as string) || '').toUpperCase() === keyName);
+  if (!item) return '';
+  const raw = item.value;
+  const str = Array.isArray(raw) ? raw.join('') : String(raw ?? '');
+  return str.trim();
 };
 
 export default launchScan;
