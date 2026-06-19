@@ -577,10 +577,10 @@ export class DetailsComponent extends IntegrationComponentBase {
                 button-type="secondary"
                 size="sm"
                 .icon=${faPlay}
-                ?disabled=${this._scanLaunching}
+                ?loading=${this._scanLaunching}
                 @click=${() => this._launchScan()}
               >
-                ${this._scanLaunching ? 'Launching…' : 'Launch Scan'}
+                Launch Scan
               </pi-button>
             `
           : html`
@@ -603,10 +603,10 @@ export class DetailsComponent extends IntegrationComponentBase {
                 button-type="tertiary"
                 size="sm"
                 .icon=${faRotate}
-                ?disabled=${this._scanCheckingStatus}
+                ?loading=${this._scanCheckingStatus}
                 @click=${() => this._checkScanStatus()}
               >
-                ${this._scanCheckingStatus ? 'Checking…' : 'Check Status'}
+                Check Status
               </pi-button>
             `}
         ${this._scanError
