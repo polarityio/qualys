@@ -40,5 +40,11 @@
     "test:server": "vitest run --project server",
     "test:browser": "vitest run --project browser",
     "test:watch": "vitest"
+  },
+  "overrides": {
+    "postman-request": {
+      ".": "2.88.1-postman.48",
+      "qs": "^6.15.2"
+    }
   }
 }
