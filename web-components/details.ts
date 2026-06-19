@@ -377,13 +377,21 @@ export class DetailsComponent extends IntegrationComponentBase {
         action: 'LAUNCH_SCAN',
         entityValue: meta.entityValue
       })) as any;
+      // Sanitize scanRef: extract just the scan/XXXXX.XXXXX portion to handle
+      // xml2js charkey collision that can prefix the value with garbage characters.
+      const rawScanRef = (result.scanRef as string) || '';
+      const scanRefMatch = rawScanRef.match(/scan\/\d+\.\d+/);
+      const scanRef = scanRefMatch ? scanRefMatch[0] : rawScanRef.trim();
       this._scanResult = {
-        scanRef: result.scanRef,
+        scanRef,
         scanTitle: result.scanTitle,
         message: result.message
       };
       // Persist to block data so it survives component destruction
-      this.block.data!.details = { ...(this.block.data!.details as object), _scanResult: result };
+      this.block.data!.details = {
+        ...(this.block.data!.details as object),
+        _scanResult: { ...result, scanRef }
+      };
     } catch (error: any) {
       this._scanError = error?.message || 'Failed to launch scan';
     } finally {
