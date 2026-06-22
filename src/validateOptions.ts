@@ -43,3 +43,40 @@ export const validateUrlOption = (
 
   return otherErrors;
 };
+
+export const validateCustomQidValueRegex = (
+  options: ValidateOptionsUserOptions,
+  otherErrors: ValidationError[] = []
+): ValidationError[] => {
+  const regexValue = options.customQidValueRegex?.value as string | undefined;
+  if (!regexValue || regexValue.trim() === '') return otherErrors;
+
+  try {
+    new RegExp(regexValue);
+  } catch (_) {
+    return otherErrors.concat({
+      key: 'customQidValueRegex',
+      message: 'The Custom Type Regex is not a valid regular expression.'
+    });
+  }
+
+  return otherErrors;
+};
+
+export const validateScanOptions = (
+  options: ValidateOptionsUserOptions,
+  otherErrors: ValidationError[] = []
+): ValidationError[] => {
+  const enableScanLaunch = options.enableScanLaunch?.value;
+  if (!enableScanLaunch) return otherErrors;
+
+  const scanOptionProfile = options.scanOptionProfile?.value as string | undefined;
+  if (!scanOptionProfile || scanOptionProfile.trim() === '') {
+    return otherErrors.concat({
+      key: 'scanOptionProfile',
+      message: 'Scan Option Profile is required when Enable Scan Launch is enabled.'
+    });
+  }
+
+  return otherErrors;
+};

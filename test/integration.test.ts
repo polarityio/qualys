@@ -288,12 +288,14 @@ describe('Qualys Integration', () => {
       expect(mockRun).toHaveBeenCalledWith(
         expect.objectContaining({
           method: 'GET',
-          url: 'https://qualysapi.example.com/api/2.0/fo/asset/host/vm/detection/',
+          url: 'https://qualysapi.example.com/api/5.0/fo/asset/host/vm/detection/',
           qs: expect.objectContaining({
             action: 'list',
             ips: '10.20.30.40',
             show_asset_id: 1,
-            show_results: 1
+            show_results: 1,
+            show_qds: 1,
+            show_qds_factors: 1
           }),
           headers: { 'X-Requested-With': 'Polarity' },
           json: false
@@ -449,7 +451,7 @@ describe('Qualys Integration', () => {
       expect(errors.some((e) => e.key === 'url' && e.message.includes('invalid'))).toBe(true);
     });
 
-    it('should return multiple errors when multiple fields are invalid', () => {
+    it('should return error when multiple fields are invalid', () => {
       const options = {
         url: { value: '' },
         username: { value: '' },
@@ -460,6 +462,122 @@ describe('Qualys Integration', () => {
       const errors = validateOptions(options as any, context as unknown as IntegrationContext);
 
       expect(errors.length).toBeGreaterThanOrEqual(3);
+    });
+
+    it('should return no errors when customQidValueRegex is empty', () => {
+      const options = {
+        url: { value: 'https://qualysapi.qualys.com' },
+        username: { value: 'testuser' },
+        password: { value: 'testpass' },
+        customQidValueRegex: { value: '' }
+      };
+      const context = createMockContext();
+
+      const errors = validateOptions(options as any, context as unknown as IntegrationContext);
+
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should return no errors when customQidValueRegex is a valid regex', () => {
+      const options = {
+        url: { value: 'https://qualysapi.qualys.com' },
+        username: { value: 'testuser' },
+        password: { value: 'testpass' },
+        customQidValueRegex: { value: 'TICKET-(\\d+)' }
+      };
+      const context = createMockContext();
+
+      const errors = validateOptions(options as any, context as unknown as IntegrationContext);
+
+      expect(errors).toHaveLength(0);
+    });
+
+    it('should return error when customQidValueRegex is an invalid regex', () => {
+      const options = {
+        url: { value: 'https://qualysapi.qualys.com' },
+        username: { value: 'testuser' },
+        password: { value: 'testpass' },
+        customQidValueRegex: { value: '[invalid(' }
+      };
+      const context = createMockContext();
+
+      const errors = validateOptions(options as any, context as unknown as IntegrationContext);
+
+      expect(errors.some((e) => e.key === 'customQidValueRegex')).toBe(true);
+    });
+  });
+
+  describe('QID value extraction', () => {
+    it('should extract QID value with colon format "QID:12345"', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('QID:12345')).toBe('12345');
+    });
+
+    it('should extract QID value with space-colon format "QID : 12345"', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('QID : 12345')).toBe('12345');
+    });
+
+    it('should extract QID value with space format "QID 12345"', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('QID 12345')).toBe('12345');
+    });
+
+    it('should extract QID value with spaced colon "QID: 12345"', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('QID: 12345')).toBe('12345');
+    });
+
+    it('should handle lowercase qid prefix', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('qid:98765')).toBe('98765');
+    });
+
+    it('should extract QID value with hyphen separator "QID-12345"', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('QID-12345')).toBe('12345');
+    });
+
+    it('should extract QID value with underscore separator "QID_12345"', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('QID_12345')).toBe('12345');
+    });
+
+    it('should extract QID value with spaced hyphen "QID - 12345"', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('QID - 12345')).toBe('12345');
+    });
+
+    it('should extract QID value with no separator "QID12345"', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('QID12345')).toBe('12345');
+    });
+  });
+
+  describe('customType value extraction', () => {
+    it('should use trailing digits as default when no regex provided', async () => {
+      const { extractCustomQidValue } = await import('../src/getLookupResults');
+      expect(extractCustomQidValue('TICKET-42')).toBe('42');
+    });
+
+    it('should use custom regex capture group 1 when provided', async () => {
+      const { extractCustomQidValue } = await import('../src/getLookupResults');
+      expect(extractCustomQidValue('TICKET-99', 'TICKET-(\\d+)')).toBe('99');
+    });
+
+    it('should use full match when custom regex has no capture group', async () => {
+      const { extractCustomQidValue } = await import('../src/getLookupResults');
+      expect(extractCustomQidValue('12345', '\\d+')).toBe('12345');
+    });
+
+    it('should fall back to trailing digits when custom regex does not match', async () => {
+      const { extractCustomQidValue } = await import('../src/getLookupResults');
+      expect(extractCustomQidValue('TICKET-55', 'NOMATCH-(\\d+)')).toBe('55');
+    });
+
+    it('should fall back to trailing digits when custom regex is invalid', async () => {
+      const { extractCustomQidValue } = await import('../src/getLookupResults');
+      expect(extractCustomQidValue('TICKET-77', '[invalid(')).toBe('77');
     });
   });
 });

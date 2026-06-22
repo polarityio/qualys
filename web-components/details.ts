@@ -2,7 +2,7 @@ import { css, html, nothing, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { IntegrationComponentBase, IBlock, typographyCSS } from '@polarityio/pi-components';
-import { faAngleUp, faAngleDown, faCopy } from '@polarityio/pi-icon';
+import { faAngleUp, faAngleDown, faCopy, faPlay, faRotate } from '@polarityio/pi-icon';
 
 interface DisplayField {
   label?: string;
@@ -11,6 +11,7 @@ interface DisplayField {
   isDate?: boolean;
   isList?: boolean;
   isListOfLinks?: boolean;
+  isKeyValueObject?: boolean;
   isHtml?: boolean;
   isTextBlock?: boolean;
   isNewSectionLineBreak?: boolean;
@@ -78,6 +79,16 @@ export class DetailsComponent extends IntegrationComponentBase {
   @state() private _activeTab = '';
   @state() private _expandedStates: Record<string, boolean> = {};
   @state() private _copiedStates: Record<string, boolean> = {};
+  @state() private _scanLaunching = false;
+  @state() private _scanCheckingStatus = false;
+  @state() private _scanError: string | null = null;
+  @state() private _scanResult: { scanRef: string; scanTitle: string; message: string } | null =
+    null;
+  @state() private _scanStatus: {
+    ref: string;
+    state: string;
+    subState: string;
+  } | null = null;
 
   private _copyContentId = `copy-content-${Array.from(
     crypto.getRandomValues(new Uint8Array(16)),
@@ -93,6 +104,7 @@ export class DetailsComponent extends IntegrationComponentBase {
         font-size: var(--pi-size-font-base, 0.8125rem);
         color: var(--pi-color-font-primary, #fafaff);
         line-height: var(--pi-line-height-base, 1.4);
+        --pi-card-background: var(--pi-color-background-application-3, #222837);
       }
 
       .copy-btn-container {
@@ -102,15 +114,15 @@ export class DetailsComponent extends IntegrationComponentBase {
         z-index: 1;
       }
 
-      .content-wrapper {
-        position: relative;
-      }
-
       .tab-content {
         display: flex;
         flex-direction: column;
         gap: var(--pi-size-spacing-xxs, 2px);
         padding-top: var(--pi-size-spacing-xs, 4px);
+      }
+
+      .list-of-links {
+        margin-bottom: var(--pi-size-spacing-sm, 8px);
       }
 
       .field-row {
@@ -230,6 +242,49 @@ export class DetailsComponent extends IntegrationComponentBase {
       .indent-3 {
         padding-left: var(--pi-size-spacing-xl, 24px);
       }
+
+      .scan-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--pi-size-spacing-xs, 4px);
+        padding-bottom: var(--pi-size-spacing-sm, 8px);
+        border-bottom: 1px solid var(--pi-color-border-container, #606470);
+        margin-bottom: var(--pi-size-spacing-sm, 8px);
+      }
+
+      .scan-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--pi-size-spacing-xs, 4px);
+      }
+
+      .scan-item {
+        border: 1px solid var(--pi-color-border-container, #606470);
+        border-radius: var(--pi-size-radius-base, 4px);
+        padding: var(--pi-size-spacing-sm, 8px);
+        display: flex;
+        flex-direction: column;
+        gap: var(--pi-size-spacing-xxs, 2px);
+      }
+
+      .scan-item h2 {
+        margin-top: 0;
+      }
+
+      .kv-object-section h2 {
+        margin-top: 0;
+        margin-bottom: var(--pi-size-spacing-xxs, 2px);
+      }
+
+      .kv-object-section-values {
+        margin-left: var(--pi-size-spacing-sm, 8px);
+      }
+
+      .scan-count-message {
+        font-size: var(--pi-size-font-sm, 0.875rem);
+        color: var(--pi-color-font-secondary, #cdced6);
+        margin-bottom: var(--pi-size-spacing-xs, 4px);
+      }
     `
   ];
 
@@ -307,6 +362,69 @@ export class DetailsComponent extends IntegrationComponentBase {
     // No-op: cards remain expanded after copy
   };
 
+  private async _launchScan() {
+    const d = this.block.data?.details as any;
+    const meta = d?._scanMeta;
+    if (!meta?.entityValue) return;
+
+    this._scanLaunching = true;
+    this._scanError = null;
+    this._scanResult = null;
+    this._scanStatus = null;
+
+    try {
+      const result = (await this.sendIntegrationMessage({
+        action: 'LAUNCH_SCAN',
+        entityValue: meta.entityValue
+      })) as any;
+      // Sanitize scanRef: extract just the scan/XXXXX.XXXXX portion to handle
+      // xml2js charkey collision that can prefix the value with garbage characters.
+      const rawScanRef = (result.scanRef as string) || '';
+      const scanRefMatch = rawScanRef.match(/scan\/\d+\.\d+/);
+      const scanRef = scanRefMatch ? scanRefMatch[0] : rawScanRef.trim();
+      this._scanResult = {
+        scanRef,
+        scanTitle: result.scanTitle,
+        message: result.message
+      };
+      // Persist to block data so it survives component destruction
+      this.block.data!.details = {
+        ...(this.block.data!.details as object),
+        _scanResult: { ...result, scanRef }
+      };
+    } catch (error: any) {
+      this._scanError = error?.message || 'Failed to launch scan';
+    } finally {
+      this._scanLaunching = false;
+    }
+  }
+
+  private async _checkScanStatus() {
+    const scanRef =
+      this._scanResult?.scanRef || (this.block.data?.details as any)?._scanResult?.scanRef;
+    if (!scanRef) return;
+
+    this._scanCheckingStatus = true;
+    this._scanError = null;
+
+    try {
+      const result = (await this.sendIntegrationMessage({
+        action: 'CHECK_SCAN_STATUS',
+        scanRef
+      })) as any;
+      this._scanStatus = { ref: result.ref, state: result.state, subState: result.subState };
+      // Persist
+      this.block.data!.details = {
+        ...(this.block.data!.details as object),
+        _scanStatus: result
+      };
+    } catch (error: any) {
+      this._scanError = error?.message || 'Failed to check scan status';
+    } finally {
+      this._scanCheckingStatus = false;
+    }
+  }
+
   render() {
     const d = this.block.data?.details as Details | undefined;
     if (!d?.tabKeys?.length) return nothing;
@@ -331,7 +449,7 @@ export class DetailsComponent extends IntegrationComponentBase {
         </div>
         <div id=${this._copyContentId}>
           ${visibleTabs.length === 1
-            ? this._renderTabContent(d[visibleTabs[0]] as DisplayField[])
+            ? this._renderTabContent(d[visibleTabs[0]] as DisplayField[], visibleTabs[0])
             : html`
                 <pi-tab-group @pi-tab-change=${this._onTabChange}>
                   ${visibleTabs.map(
@@ -340,7 +458,9 @@ export class DetailsComponent extends IntegrationComponentBase {
                         slot="tab"
                         panel=${tabKey}
                         ?active=${idx === activeIndex}
-                        .count=${(d[tabKey] as DisplayField[]).length}
+                        .count=${this._countTabRecords(
+                          d[tabKey] as DisplayField[] | DisplayField[][]
+                        )}
                       >
                         ${humanizeTabKey(tabKey)}
                       </pi-tab>
@@ -349,7 +469,7 @@ export class DetailsComponent extends IntegrationComponentBase {
                   ${visibleTabs.map(
                     (tabKey, idx) => html`
                       <pi-tab-panel slot="panel" ?active=${idx === activeIndex}>
-                        ${this._renderTabContent(d[tabKey] as DisplayField[])}
+                        ${this._renderTabContent(d[tabKey] as DisplayField[], tabKey)}
                       </pi-tab-panel>
                     `
                   )}
@@ -360,12 +480,193 @@ export class DetailsComponent extends IntegrationComponentBase {
     `;
   }
 
-  private _renderTabContent(fields: DisplayField[]) {
+  private _renderTabContent(fields: DisplayField[] | DisplayField[][], tabKey?: string) {
     if (!fields?.length) return nothing;
+
+    if (Array.isArray(fields[0])) {
+      return html`
+        <div class="tab-content">
+          ${(fields as DisplayField[][]).map((group) => this._renderKnowledgeBaseCard(group))}
+        </div>
+      `;
+    }
+
+    if (tabKey === 'scans') {
+      return html`
+        <div class="tab-content">
+          ${this._renderScanActions()} ${this._renderScansContent(fields as DisplayField[])}
+        </div>
+      `;
+    }
+
+    if (tabKey === 'hostDetections') {
+      return html`
+        <div class="tab-content">
+          ${this._renderHostDetectionsContent(fields as DisplayField[])}
+        </div>
+      `;
+    }
+
     return html`
       <div class="tab-content">
-        ${fields.map((field, idx) => this._renderDisplayField(field, idx))}
+        ${(fields as DisplayField[]).map((field, idx) => this._renderDisplayField(field, idx))}
       </div>
+    `;
+  }
+
+  private _renderKnowledgeBaseCard(group: DisplayField[]) {
+    const titleField = group.find((f) => f.isTitle);
+    const title = titleField?.value || titleField?.label || '';
+    const bodyFields = group.filter((f) => !f.isTitle && !f.isNewSectionLineBreak);
+    return html`
+      <pi-card card-title=${title} collapsible expanded data-pi-card>
+        ${bodyFields.map((field, idx) => this._renderDisplayField(field, idx))}
+      </pi-card>
+    `;
+  }
+
+  private _renderHostDetectionsContent(fields: DisplayField[]) {
+    // Group flat fields into per-host arrays (split on isNewSectionLineBreak)
+    const groups: DisplayField[][] = [];
+    let current: DisplayField[] = [];
+    for (const field of fields) {
+      if (field.isNewSectionLineBreak) {
+        if (current.length) {
+          groups.push(current);
+          current = [];
+        }
+      } else {
+        current.push(field);
+      }
+    }
+    if (current.length) groups.push(current);
+
+    return html`
+      ${groups.map((group) => {
+        const titleField = group.find((f) => f.isTitle);
+        const title = titleField?.showLabelAndValue
+          ? `${titleField.label}: ${titleField.value}`
+          : titleField?.value || titleField?.label || 'Host';
+        // If the title has a displayLink, keep it in the body so it renders as pi-external-link
+        const bodyFields = group.filter((f) => !f.isTitle || f.displayLink);
+        return html`
+          <pi-card card-title=${title} collapsible expanded data-pi-card>
+            ${bodyFields.map((field, idx) => this._renderDisplayField(field, idx))}
+          </pi-card>
+        `;
+      })}
+    `;
+  }
+
+  private _renderScanActions() {
+    const d = this.block.data?.details as any;
+    const meta = d?._scanMeta;
+    const isIp = meta?.entityType === 'IPv4' || meta?.entityType === 'IPv6';
+
+    if (!meta?.enableScanLaunch || !isIp) return nothing;
+
+    // Restore persisted results
+    const scanResult = this._scanResult || d?._scanResult;
+    const scanStatus = this._scanStatus || d?._scanStatus;
+
+    return html`
+      <div class="scan-actions">
+        ${!scanResult
+          ? html`
+              <pi-button
+                button-type="secondary"
+                size="sm"
+                .icon=${faPlay}
+                ?loading=${this._scanLaunching}
+                @click=${() => this._launchScan()}
+              >
+                Launch Scan
+              </pi-button>
+            `
+          : html`
+              <pi-key-value
+                key="Scan Launched"
+                value=${scanResult.scanTitle || scanResult.message || ''}
+              ></pi-key-value>
+              <pi-key-value key="Reference" value=${scanResult.scanRef || ''}></pi-key-value>
+              ${scanStatus
+                ? html`
+                    <pi-key-value
+                      key="Status"
+                      value="${scanStatus.state}${scanStatus.subState
+                        ? ` (${scanStatus.subState})`
+                        : ''}"
+                    ></pi-key-value>
+                  `
+                : nothing}
+              <pi-button
+                button-type="tertiary"
+                size="sm"
+                .icon=${faRotate}
+                ?loading=${this._scanCheckingStatus}
+                @click=${() => this._checkScanStatus()}
+              >
+                Check Status
+              </pi-button>
+            `}
+        ${this._scanError
+          ? html`<pi-error
+              variant="danger"
+              open
+              error-title="Scan Error"
+              .message=${this._scanError}
+            ></pi-error>`
+          : nothing}
+      </div>
+    `;
+  }
+
+  private _countTabRecords(fields: DisplayField[] | DisplayField[][]): number {
+    if (!fields?.length) return 0;
+    // Grouped format (CVE knowledgeBaseRecords) — each inner array is one record
+    if (Array.isArray(fields[0])) return (fields as DisplayField[][]).length;
+    // Flat format — count isNewSectionLineBreak markers (one per record)
+    return (fields as DisplayField[]).filter((f) => f.isNewSectionLineBreak).length;
+  }
+
+  private _renderScansContent(fields: DisplayField[]) {
+    const MAX_SCANS = 10;
+
+    // Group flat fields into per-scan arrays (split on isNewSectionLineBreak)
+    const groups: DisplayField[][] = [];
+    let current: DisplayField[] = [];
+    for (const field of fields) {
+      if (field.isNewSectionLineBreak) {
+        if (current.length) {
+          groups.push(current);
+          current = [];
+        }
+      } else {
+        current.push(field);
+      }
+    }
+    if (current.length) groups.push(current);
+
+    const totalScans = groups.length;
+    const visibleGroups = groups.slice(0, MAX_SCANS);
+
+    return html`
+      ${totalScans > MAX_SCANS
+        ? html`<div class="scan-count-message">
+            Showing first ${MAX_SCANS} of ${totalScans} scans
+          </div>`
+        : nothing}
+      <pi-show-more max-lines="50">
+        <div class="scan-list">
+          ${visibleGroups.map(
+            (group) => html`
+              <div class="scan-item">
+                ${group.map((field, idx) => this._renderDisplayField(field, idx))}
+              </div>
+            `
+          )}
+        </div>
+      </pi-show-more>
     `;
   }
 
@@ -379,8 +680,11 @@ export class DetailsComponent extends IntegrationComponentBase {
     if (field.isListOfLinks) {
       return this._renderListOfLinks(field);
     }
+    if (field.isKeyValueObject) {
+      return this._renderKeyValueObject(field);
+    }
     if (field.isHtml) {
-      return this._renderHtmlField(field, fieldIndex);
+      return this._renderHtmlField(field);
     }
     if (field.isList) {
       return this._renderList(field, fieldIndex);
@@ -395,7 +699,7 @@ export class DetailsComponent extends IntegrationComponentBase {
   }
 
   private _renderTitle(field: DisplayField) {
-    const indentClass = `indent-${field.indent || 0}`;
+    const indentClass = field.indent ? `indent-${field.indent}` : '';
     const labelText = field.capitalize
       ? capitalizeStr(field.label || field.value || '')
       : field.label || field.value || '';
@@ -435,7 +739,7 @@ export class DetailsComponent extends IntegrationComponentBase {
     const indentClass = `indent-${field.indent || 0}`;
     const links = field.value as Array<{ url: string; id: string; capitalize?: boolean }>;
     return html`
-      <div class="field-row ${indentClass}">
+      <div class="field-row list-of-links ${indentClass}">
         <span class="kv-key">${field.label}:</span>
         <span class="link-list">
           ${links.map(
@@ -453,21 +757,11 @@ export class DetailsComponent extends IntegrationComponentBase {
     `;
   }
 
-  private _renderHtmlField(field: DisplayField, fieldIndex: number) {
-    const stateKey = `${fieldIndex}-0-${field.label}`;
-    const isExpanded = !!this._expandedStates[stateKey];
+  private _renderHtmlField(field: DisplayField) {
     return html`
-      <div>
-        <button
-          class="expandable-title"
-          @click=${() => this._toggleExpanded(stateKey)}
-          aria-expanded=${isExpanded}
-        >
-          <span class="expandable-title-text">${field.label}</span>
-          <pi-icon .icon=${isExpanded ? faAngleUp : faAngleDown} size="sm"></pi-icon>
-        </button>
-        ${isExpanded ? html`<div class="html-content">${unsafeHTML(field.value)}</div>` : nothing}
-      </div>
+      <pi-section-header title=${field.label || ''} show-collapse-button is-collapsed>
+        <div class="html-content">${unsafeHTML(field.value)}</div>
+      </pi-section-header>
     `;
   }
 
@@ -478,13 +772,15 @@ export class DetailsComponent extends IntegrationComponentBase {
     return html`
       <div class="list-section">
         <h3>${field.label}</h3>
-        <div class="list-items">
-          ${items.map((itemFields, itemIdx) =>
-            field.collapsibleListItems
-              ? this._renderCollapsibleListItem(field, fieldIndex, itemFields, itemIdx)
-              : this._renderFlatListItem(itemFields, fieldIndex, itemIdx)
-          )}
-        </div>
+        <pi-show-more max-lines="20">
+          <div class="list-items">
+            ${items.map((itemFields, itemIdx) =>
+              field.collapsibleListItems
+                ? this._renderCollapsibleListItem(field, fieldIndex, itemFields, itemIdx)
+                : this._renderFlatListItem(itemFields, fieldIndex, itemIdx)
+            )}
+          </div>
+        </pi-show-more>
       </div>
     `;
   }
@@ -537,6 +833,10 @@ export class DetailsComponent extends IntegrationComponentBase {
   private _renderListItemField(field: DisplayField, fieldIndex: number, subIndex: number) {
     const value = field.isDate ? formatDate(field.value) : field.value;
     const copyStateKey = `${fieldIndex}-${field.label}-${subIndex}`;
+
+    if (field.isKeyValueObject) {
+      return this._renderKeyValueObject(field);
+    }
 
     if (field.fieldIsCopyable) {
       return html`
@@ -593,6 +893,27 @@ export class DetailsComponent extends IntegrationComponentBase {
         ${this._copiedStates[copyStateKey]
           ? html`<span class="copied-label">Copied</span>`
           : nothing}
+      </div>
+    `;
+  }
+
+  private _renderKeyValueObject(field: DisplayField) {
+    const obj = field.value as Record<string, string> | null | undefined;
+    if (!obj || typeof obj !== 'object') {
+      return nothing;
+    }
+    const entries = Object.entries(obj);
+    if (entries.length === 0) {
+      return nothing;
+    }
+    return html`
+      <div class="kv-object-section">
+        ${field.label ? html`<h2>${field.label}</h2>` : nothing}
+        <div class="kv-object-section-values">
+          ${entries.map(
+            ([key, val]) => html`<pi-key-value key=${key} value=${val ?? ''}></pi-key-value>`
+          )}
+        </div>
       </div>
     `;
   }

@@ -116,7 +116,7 @@ describe('Qualys DetailsComponent', () => {
     const html = getShadowHTML(el);
     expect(html).toContain('IP Address');
     expect(html).toContain('10.0.0.1');
-    expect(html).toContain('<h2');
+    expect(html).toContain('pi-card');
   });
 
   it('should render date fields with formatted dates', async () => {
@@ -177,9 +177,9 @@ describe('Qualys DetailsComponent', () => {
     );
 
     const html = getShadowHTML(el);
+    expect(html).toContain('pi-section-header');
     expect(html).toContain('Diagnosis');
-    // HTML content is collapsed by default
-    expect(html).not.toContain('This is a vulnerability description');
+    expect(html).toContain('This is a vulnerability description');
   });
 
   it('should render the copy button', async () => {
@@ -194,7 +194,7 @@ describe('Qualys DetailsComponent', () => {
     expect(html).toContain('pi-copy-button');
   });
 
-  it('should render section breaks for isNewSectionLineBreak fields', async () => {
+  it('should render hostDetection records as pi-cards grouped by host', async () => {
     el = await renderComponent(
       createBlock({
         tabKeys: ['hostDetections'],
@@ -207,7 +207,10 @@ describe('Qualys DetailsComponent', () => {
     );
 
     const html = getShadowHTML(el);
-    expect(html).toContain('section-break');
+    expect(html).toContain('pi-card');
+    expect(html).toContain('Field1');
+    expect(html).toContain('Field2');
+    expect(html).not.toContain('section-break');
   });
 
   it('should not render tabs when there is only one visible tab', async () => {
@@ -283,6 +286,7 @@ describe('Qualys DetailsComponent', () => {
     );
 
     const html = getShadowHTML(el);
+    expect(html).toContain('pi-card');
     expect(html).toContain('pi-external-link');
     expect(html).toContain('https://example.com/host/1');
   });
@@ -315,5 +319,96 @@ describe('Qualys DetailsComponent', () => {
     expect(html).toContain('CVE-2024-0001');
     expect(html).toContain('CVE-2024-0002');
     expect(html).toContain('pi-external-link');
+  });
+
+  it('should render CVE knowledge base records as pi-cards with QID title', async () => {
+    el = await renderComponent(
+      createBlock({
+        tabKeys: ['knowledgeBaseRecords'],
+        knowledgeBaseRecords: [
+          [
+            { value: 'SQL Injection Vulnerability', isTitle: true },
+            { label: 'QID', value: '12345', fieldIsCopyable: true, shouldCopyFieldLabel: true },
+            { label: 'Severity Level', value: '5' }
+          ],
+          [
+            { value: 'Buffer Overflow Exploit', isTitle: true },
+            { label: 'QID', value: '67890', fieldIsCopyable: true, shouldCopyFieldLabel: true },
+            { label: 'Severity Level', value: '3' }
+          ]
+        ]
+      })
+    );
+
+    const html = getShadowHTML(el);
+    expect(html).toContain('pi-card');
+    expect(html).toContain('SQL Injection Vulnerability');
+    expect(html).toContain('Buffer Overflow Exploit');
+    expect(html).toContain('12345');
+    expect(html).toContain('67890');
+  });
+
+  it('should render scan results as bordered items without hr separators', async () => {
+    el = await renderComponent(
+      createBlock({
+        tabKeys: ['scans'],
+        scans: [
+          { label: 'Scan One', value: 'Scan One', isTitle: true },
+          { label: 'Status', value: 'Finished' },
+          { isNewSectionLineBreak: true },
+          { label: 'Scan Two', value: 'Scan Two', isTitle: true },
+          { label: 'Status', value: 'Running' },
+          { isNewSectionLineBreak: true }
+        ]
+      })
+    );
+
+    const html = getShadowHTML(el);
+    expect(html).toContain('scan-item');
+    expect(html).toContain('Scan One');
+    expect(html).toContain('Scan Two');
+    expect(html).not.toContain('section-break');
+  });
+
+  it('should show a count message when there are more than 10 scans', async () => {
+    const scanFields: Record<string, unknown>[] = [];
+    for (let i = 1; i <= 12; i++) {
+      scanFields.push({ label: `Scan ${i}`, value: `Scan ${i}`, isTitle: true });
+      scanFields.push({ label: 'Status', value: 'Finished' });
+      scanFields.push({ isNewSectionLineBreak: true });
+    }
+
+    el = await renderComponent(
+      createBlock({
+        tabKeys: ['scans'],
+        scans: scanFields
+      })
+    );
+
+    const html = getShadowHTML(el);
+    expect(html).toContain('scan-count-message');
+    expect(html).toContain('10 of');
+    expect(html).toContain('Scan 1');
+    expect(html).toContain('Scan 10');
+    expect(html).not.toContain('Scan 11');
+    expect(html).not.toContain('Scan 12');
+  });
+
+  it('should not show a count message when there are 10 or fewer scans', async () => {
+    const scanFields: Record<string, unknown>[] = [];
+    for (let i = 1; i <= 5; i++) {
+      scanFields.push({ label: `Scan ${i}`, value: `Scan ${i}`, isTitle: true });
+      scanFields.push({ isNewSectionLineBreak: true });
+    }
+
+    el = await renderComponent(
+      createBlock({
+        tabKeys: ['scans'],
+        scans: scanFields
+      })
+    );
+
+    const html = getShadowHTML(el);
+    expect(html).not.toContain('Showing first');
   });
 });
