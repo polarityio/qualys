@@ -532,6 +532,26 @@ describe('Qualys Integration', () => {
       const { extractQidValue } = await import('../src/getLookupResults');
       expect(extractQidValue('qid:98765')).toBe('98765');
     });
+
+    it('should extract QID value with hyphen separator "QID-12345"', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('QID-12345')).toBe('12345');
+    });
+
+    it('should extract QID value with underscore separator "QID_12345"', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('QID_12345')).toBe('12345');
+    });
+
+    it('should extract QID value with spaced hyphen "QID - 12345"', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('QID - 12345')).toBe('12345');
+    });
+
+    it('should extract QID value with no separator "QID12345"', async () => {
+      const { extractQidValue } = await import('../src/getLookupResults');
+      expect(extractQidValue('QID12345')).toBe('12345');
+    });
   });
 
   describe('customType value extraction', () => {

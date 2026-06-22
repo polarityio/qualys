@@ -12,7 +12,7 @@ import associateDataWithEntities from './associateDataWithEntities';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 export const extractQidValue = (value: string): string => {
-  const match = value.match(/(?:QID|qid)(?:\s*:\s*|\s+)(\d{1,8})/i);
+  const match = value.match(/(?:QID|qid)(?:\s*[:\-_]\s*|\s*)(\d{1,8})/i);
   return match ? match[1] : value.trim();
 };
 
