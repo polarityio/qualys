@@ -52,9 +52,10 @@ const launchScan = async (entityValue, options, requestWithDefaults, Logger) => 
     'body',
     await requestWithDefaults({
       method: 'POST',
-      url: `${options.url}/api/2.0/fo/scan/`,
+      url: `${options.url}/api/3.0/fo/scan/`,
       form: formData,
       headers: { 'X-Requested-With': 'Polarity' },
+      json: false,
       options
     })
   );

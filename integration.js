@@ -1,5 +1,9 @@
 const createRequestWithDefaults = require('./src/createRequestWithDefaults');
-const { validateStringOptions, validateUrlOption, validateCustomQidValueRegex } = require('./src/validateOptions');
+const {
+  validateStringOptions,
+  validateUrlOption,
+  validateCustomQidValueRegex
+} = require('./src/validateOptions');
 const { parseErrorToReadableJSON } = require('./src/dataTransformations');
 const { getLookupResults } = require('./src/getLookupResults');
 const launchScan = require('./src/launchScan');
@@ -53,7 +57,9 @@ const validateOptions = async (options, callback) => {
   const urlValidationErrors = validateUrlOption(options.url.value);
 
   const customTypeRegexErrors = validateCustomQidValueRegex(options);
-  const errors = stringValidationErrors.concat(urlValidationErrors).concat(customTypeRegexErrors);
+  const errors = stringValidationErrors
+    .concat(urlValidationErrors)
+    .concat(customTypeRegexErrors);
 
   callback(null, errors);
 };
@@ -69,6 +75,7 @@ const onMessage = async (payload, options, cb) => {
         requestWithDefaults,
         Logger
       );
+      Logger.debug({ scanResult: result }, 'Scan Result');
       return cb(null, result);
     }
 
@@ -79,6 +86,7 @@ const onMessage = async (payload, options, cb) => {
         requestWithDefaults,
         Logger
       );
+      Logger.debug({ scanStatus: result }, 'Scan Status');
       return cb(null, result);
     }
 
