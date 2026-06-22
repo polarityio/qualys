@@ -69,7 +69,7 @@ All options are admin-only and cannot be edited by regular users.
 *(Default: disabled)* When enabled, a **Launch Scan** button appears in the Scans tab for IP address entities, allowing analysts to initiate a Qualys VM scan directly from Polarity. Requires the **Scan Option Profile** to be configured.
 
 ### Scan Option Profile
-The Qualys option profile title or numeric ID to use when launching scans (e.g., `Initial Options` or `43165`). Required when **Enable Scan Launch** is enabled.
+The Qualys option profile title or numeric ID to use when launching scans (e.g., `Initial Options` or `43165`). Required when **Enable Scan Launch** is enabled.  You can find the Scan Option Profile by navigating to the "Scans" page and then click on the "Option Profiles" tab.  The "Title" column is the name of the scan option profile.  Do not include the word `(default)` if selecting the default Scan Option Profile.
 
 ### Scanner Appliance Name
 The name of the scanner appliance to target when launching scans (e.g., `scanner1`). Leave blank to use the account's default scanner for the target IP.

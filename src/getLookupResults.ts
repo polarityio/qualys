@@ -16,10 +16,10 @@ export const extractQidValue = (value: string): string => {
   return match ? match[1] : value.trim();
 };
 
-export const extractCustomTypeValue = (value: string, customTypeValueRegex?: string): string => {
-  if (customTypeValueRegex && customTypeValueRegex.trim() !== '') {
+export const extractCustomQidValue = (value: string, customQidValueRegex?: string): string => {
+  if (customQidValueRegex && customQidValueRegex.trim() !== '') {
     try {
-      const re = new RegExp(customTypeValueRegex);
+      const re = new RegExp(customQidValueRegex);
       const match = value.match(re);
       if (match) {
         return match[1] !== undefined ? match[1] : match[0];
@@ -47,10 +47,10 @@ export const getLookupResults = async (
     let value = entity.value;
     if (type === 'qid') {
       value = extractQidValue(entity.value);
-    } else if (type === 'customType') {
-      value = extractCustomTypeValue(
+    } else if (type === 'customQid') {
+      value = extractCustomQidValue(
         entity.value,
-        options.customTypeValueRegex?.value as string | undefined
+        options.customQidValueRegex?.value as string | undefined
       );
     }
 

@@ -17,7 +17,7 @@ import {
   validateStringOptions,
   validateUrlOption,
   validateScanOptions,
-  validateCustomTypeValueRegex
+  validateCustomQidValueRegex
 } from './validateOptions';
 import launchScan from './launchScan';
 import checkScanStatus from './checkScanStatus';
@@ -116,7 +116,7 @@ function validateOptions(
   const stringValidationErrors = validateStringOptions(stringOptionsErrorMessages, options);
   const urlValidationErrors = validateUrlOption(options.url.value as string);
   const scanValidationErrors = validateScanOptions(options);
-  const customTypeRegexErrors = validateCustomTypeValueRegex(options);
+  const customTypeRegexErrors = validateCustomQidValueRegex(options);
 
   return stringValidationErrors
     .concat(urlValidationErrors)

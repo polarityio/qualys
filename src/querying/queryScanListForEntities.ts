@@ -42,7 +42,7 @@ const queryScanListForAllEntities = async (
 
   const ipEntities = entities.filter((e: any) => e.isIP || e.type === 'IPv4' || e.type === 'IPv6');
 
-  const qidEntities = entities.filter((e: any) => e.type === 'qid' || e.type === 'customType');
+  const qidEntities = entities.filter((e: any) => e.type === 'qid' || e.type === 'customQid');
 
   for (const entity of ipEntities) {
     try {

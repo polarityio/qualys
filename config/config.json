@@ -24,8 +24,8 @@
       "type": "custom",
       "name": "Custom QID Value",
       "description": "Match custom QID values and extract the numeric QID via the \"Custom QID Value Regex\" integration option",
-      "key": "customType",
-      "regex": "",
+      "key": "customQid",
+      "regex": "(?:QID|qid)(?:\\s*[:-_]\\s*|\\s*)\\d{1,8}",
       "editable": true,
       "enabled": false
     }
@@ -104,7 +104,7 @@
       "adminOnly": true
     },
     {
-      "key": "customTypeValueRegex",
+      "key": "customQidValueRegex",
       "name": "Custom QID Value Regex",
       "description": "When the Custom QID Value data type is enabled, this regex is used to extract the QID numeric value from the matched entity string. Leave blank to extract the last sequence of digits found in the match.",
       "default": "",

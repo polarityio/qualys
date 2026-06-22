@@ -42,8 +42,8 @@ const associateDataWithEntities = (
       return { entity, results: { hostDetections, knowledgeBaseRecords, scans: entityScans } };
     }
 
-    // QID / customType entities: match KB records by qid field
-    if (entityType === 'qid' || entityType === 'customType') {
+    // QID / customQid entities: match KB records by qid field
+    if (entityType === 'qid' || entityType === 'customQid') {
       const knowledgeBaseRecords = (allFoundKnowledgeBaseRecords || []).filter(
         (kb: any) => String(kb.qid) === String(entity.value)
       );
@@ -76,7 +76,7 @@ const findEntityScans = (entity: Entity, allScanResults: ScanResult[]): any[] =>
     const entry = allScanResults.find((r) => r.entityValue === entity.value);
     return entry ? entry.scans : [];
   }
-  if ((entity as any).type === 'qid' || (entity as any).type === 'customType') {
+  if ((entity as any).type === 'qid' || (entity as any).type === 'customQid') {
     const entry = allScanResults.find((r) => r.entityValue === '__RECENT__');
     return entry ? entry.scans : [];
   }

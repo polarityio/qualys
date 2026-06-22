@@ -26,7 +26,7 @@ const queryKnowledgeBaseForAllEntities = async (
 ): Promise<any[]> => {
   const cveEntities = filter(flow(get('type'), eq('cve')), entities) as Entity[];
   const qidEntities = filter(
-    flow(get('type'), or(eq('qid'), eq('customType'))),
+    flow(get('type'), or(eq('qid'), eq('customQid'))),
     entities
   ) as Entity[];
   const qidValues = map(get('value'), qidEntities) as string[];

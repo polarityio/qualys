@@ -22,7 +22,7 @@ const createLookupResults = (
     const lookupResult: LookupResult = {
       entity,
       displayValue:
-        (entity.type as string) === 'qid' || (entity.type as string) === 'customType'
+        (entity.type as string) === 'qid' || (entity.type as string) === 'customQid'
           ? `QID: ${entity.value}`
           : entity.value,
       data: formattedQueryResult
