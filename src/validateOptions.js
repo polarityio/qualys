@@ -41,15 +41,15 @@ const validateUrlOption = (url, otherErrors = []) => {
   return otherErrors;
 };
 
-const validateCustomTypeValueRegex = (options, otherErrors = []) => {
-  const regexValue = options.customTypeValueRegex && options.customTypeValueRegex.value;
+const validateCustomQidValueRegex = (options, otherErrors = []) => {
+  const regexValue = options.customQidValueRegex && options.customQidValueRegex.value;
   if (!regexValue || regexValue.trim() === '') return otherErrors;
 
   try {
     new RegExp(regexValue);
   } catch (_) {
     return otherErrors.concat({
-      key: 'customTypeValueRegex',
+      key: 'customQidValueRegex',
       message: 'The Custom Type Regex is not a valid regular expression.'
     });
   }
@@ -58,4 +58,4 @@ const validateCustomTypeValueRegex = (options, otherErrors = []) => {
 };
 
 
-module.exports = { validateStringOptions, validateUrlOption, validateCustomTypeValueRegex };
+module.exports = { validateStringOptions, validateUrlOption, validateCustomQidValueRegex };

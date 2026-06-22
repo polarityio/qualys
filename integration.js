@@ -1,5 +1,5 @@
 const createRequestWithDefaults = require('./src/createRequestWithDefaults');
-const { validateStringOptions, validateUrlOption, validateCustomTypeValueRegex } = require(./src/validateOptions.);
+const { validateStringOptions, validateUrlOption, validateCustomQidValueRegex } = require('./src/validateOptions');
 const { parseErrorToReadableJSON } = require('./src/dataTransformations');
 const { getLookupResults } = require('./src/getLookupResults');
 const launchScan = require('./src/launchScan');
@@ -52,7 +52,7 @@ const validateOptions = async (options, callback) => {
 
   const urlValidationErrors = validateUrlOption(options.url.value);
 
-  const customTypeRegexErrors = validateCustomTypeValueRegex(options);
+  const customTypeRegexErrors = validateCustomQidValueRegex(options);
   const errors = stringValidationErrors.concat(urlValidationErrors).concat(customTypeRegexErrors);
 
   callback(null, errors);

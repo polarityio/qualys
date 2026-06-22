@@ -39,7 +39,7 @@ const QUERY_PATHS_BY_TYPE = {
   }
 };
 
-QUERY_PATHS_BY_TYPE.customType = QUERY_PATHS_BY_TYPE.qid;
+QUERY_PATHS_BY_TYPE.customQid = { ...QUERY_PATHS_BY_TYPE.qid };
 
 const SEARCH_COLUMN_NAMES_BY_TYPE = {
   cve: ['title', 'category', 'diagnosis', 'solution', 'cves', 'vender_references'],
