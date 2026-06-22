@@ -35,6 +35,7 @@ export interface DisplayFormatEntry {
   isDate?: boolean;
   isList?: boolean;
   isListOfLinks?: boolean;
+  isKeyValueObject?: boolean;
   isHtml?: boolean;
   isNewSectionLineBreak?: boolean;
   indent?: number;
@@ -64,14 +65,16 @@ export const HOST_DETECTION_DISPLAY_FORMAT: DisplayFormat = {
     indent: 1,
     collapsibleListItems: true,
     itemDisplayFormat: {
-      results: 'Detection Result',
       qid: { label: 'QID', fieldIsCopyable: true, shouldCopyFieldLabel: true },
       type: 'Detection Type',
       severity: 'Severity',
+      qds: 'QDS Score',
+      qds_severity: 'QDS Severity',
+      qds_factors: { label: 'QDS Factors', isKeyValueObject: true },
+      status: 'Status',
       port: 'Port',
       protocol: 'Protocol',
       ssl: 'SSL',
-      status: 'Status',
       is_ignored: 'Is Ignored',
       is_disabled: 'Is Disabled',
       times_found: 'Times Found',
@@ -79,7 +82,8 @@ export const HOST_DETECTION_DISPLAY_FORMAT: DisplayFormat = {
       last_found_datetime: { label: 'Last Found', isDate: true },
       last_test_datetime: { label: 'Last Tested', isDate: true },
       last_update_datetime: { label: 'Last Updated', isDate: true },
-      last_processed_datetime: { label: 'Last Processed', isDate: true }
+      last_processed_datetime: { label: 'Last Processed', isDate: true },
+      results: 'Detection Result'
     }
   },
   newSectionLineBreak: { isNewSectionLineBreak: true }
@@ -102,5 +106,40 @@ export const KNOWLEDGE_BASE_RECORD_DISPLAY_FORMAT: DisplayFormat = {
   vender_references: { label: 'Vendor References', isListOfLinks: true },
   diagnosis: { label: 'Diagnosis', isHtml: true },
   solution: { label: 'Solution', isHtml: true },
+  newSectionLineBreak: { isNewSectionLineBreak: true }
+};
+
+export const CVE_DISPLAY_FORMAT: DisplayFormat = {
+  title: { isTitle: true },
+  qid: { label: 'QID', fieldIsCopyable: true, shouldCopyFieldLabel: true },
+  vuln_type: 'Vuln Type',
+  severity: 'Severity Level',
+  category: 'Category',
+  patchable: 'Patch Available',
+  published: { label: 'Published On', isDate: true },
+  modified: { label: 'Last Modified', isDate: true },
+  cvss_base: 'CVSS Base',
+  cvss_temporal: 'CVSS Temporal',
+  cvss_v3_base: 'CVSS v3 Base',
+  cvss_v3_temporal: 'CVSS v3 Temporal',
+  threat_intelligence: 'Threat Intelligence',
+  cves: { label: 'CVE IDs', isListOfLinks: true },
+  diagnosis: { label: 'Diagnosis', isHtml: true },
+  consequence: { label: 'Consequence', isHtml: true },
+  solution: { label: 'Solution', isHtml: true },
+  newSectionLineBreak: { isNewSectionLineBreak: true }
+};
+
+export const SCAN_DISPLAY_FORMAT: DisplayFormat = {
+  title: { isTitle: true },
+  state: 'Status',
+  sub_state: 'Sub-Status',
+  launch_datetime: { label: 'Launched', isDate: true },
+  duration: 'Duration',
+  type: 'Scan Type',
+  user_login: 'Launched By',
+  target: 'Target',
+  option_profile: 'Option Profile',
+  ref: { label: 'Reference', fieldIsCopyable: true, shouldCopyFieldLabel: false },
   newSectionLineBreak: { isNewSectionLineBreak: true }
 };
