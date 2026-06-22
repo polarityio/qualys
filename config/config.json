@@ -3,16 +3,28 @@
   "name": "Qualys",
   "acronym": "QLS",
   "description": "The Polarity Qualys Integration queries the Qualys Cloud Platform's Host Detection List and KnowledgeBase for IP Addresses, IPv6 Addresses, Domains, CVEs, and QIDs.",
-  "entityTypes": [
+  "dataTypes": [
     "IPv4",
     "IPv6",
     "domain",
-    "cve"
-  ],
-  "customTypes": [
+    "cve",
     {
+      "type": "custom",
+      "name":  "Qualys ID (QID)",
+      "description": "Matches QID values prefixed with QID followed by a 1 to 8 digit number (e.g., QID1234, QID-1234, QID:1234, QID 1234)",
       "key": "qid",
-      "regex": "(?:QID|qid):\\s*\\d{1,8}"
+      "regex": "(?:QID|qid)(?:\\s*[:_-]\\s*|\\s*)\\d{1,8}",
+      "editable": false,
+      "enabled": true
+    },
+    {
+      "type": "custom",
+      "name": "Custom QID Value",
+      "description": "Match custom QID values and extract the numeric QID via the \"Custom QID Value Regex\" integration option",
+      "key": "customQid",
+      "regex": "(?:QID|qid)(?:\\s*[:_-]\\s*|\\s*)\\d{1,8}",
+      "editable": true,
+      "enabled": false
     }
   ],
   "defaultColor": "light-purple",
@@ -88,6 +100,15 @@
       "key": "scannerName",
       "name": "Scanner Appliance Name",
       "description": "The scanner appliance name to target when launching scans (e.g., 'scanner1'). Leave blank to use the default scanner for the target IP.",
+      "default": "",
+      "type": "text",
+      "userCanEdit": false,
+      "adminOnly": true
+    },
+    {
+      "key": "customQidValueRegex",
+      "name": "Custom Type Value Regex",
+      "description": "When the Custom Type entity type is enabled, this regex is used to extract the QID numeric value from the matched entity string. Leave blank to extract the last sequence of digits found in the match.",
       "default": "",
       "type": "text",
       "userCanEdit": false,

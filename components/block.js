@@ -65,17 +65,26 @@ polarity.export = PolarityComponent.extend({
       this.set('scanState', '');
       this.set('scanSubState', '');
       this.set('scanDuration', '');
-      this.get('block').notifyPropertyChange('data');
 
-      this.sendIntegrationMessage({ action: 'LAUNCH_SCAN', entityValue }, (err, result) => {
-        this.set('isScanLaunching', false);
-        if (err) {
-          this.set('scanLaunchError', err.detail || 'Scan launch failed. Check Polarity logs.');
-        } else {
-          this.set('scanRef', (result && result.scanRef) || '');
-        }
-        this.get('block').notifyPropertyChange('data');
-      });
+      this.sendIntegrationMessage({ action: 'LAUNCH_SCAN', entityValue })
+        .then((result) => {
+          // Sanitize scanRef: extract just the scan/XXXXX.XXXXX portion to handle
+          // xml2js charkey collision that can prefix the value with garbage characters.
+          const rawScanRef = result.scanRef || '';
+          const scanRefMatch = rawScanRef.match(/scan\/\d+\.\d+/);
+          const scanRef = scanRefMatch ? scanRefMatch[0] : rawScanRef.trim();
+          this.set('scanRef', scanRef);
+        })
+        .catch((err) => {
+          this.set(
+            'scanLaunchError',
+            err.detail || 'Scan launch failed. Check Polarity logs.'
+          );
+        })
+        .finally(() => {
+          this.set('isScanLaunching', false);
+          this.get('block').notifyPropertyChange('data');
+        });
     },
 
     checkScanStatus: function () {
@@ -87,18 +96,23 @@ polarity.export = PolarityComponent.extend({
       this.set('isCheckingStatus', true);
       this.get('block').notifyPropertyChange('data');
 
-      this.sendIntegrationMessage({ action: 'CHECK_SCAN_STATUS', scanRef }, (err, result) => {
-        this.set('isCheckingStatus', false);
-        if (err) {
-          this.set('scanLaunchError', err.detail || 'Status check failed. Check Polarity logs.');
-          this.set('scanState', '');
-        } else {
+      this.sendIntegrationMessage({ action: 'CHECK_SCAN_STATUS', scanRef })
+        .then((result) => {
           this.set('scanState', (result && result.state) || 'Unknown');
           this.set('scanSubState', (result && result.subState) || '');
           this.set('scanDuration', (result && result.duration) || '');
-        }
-        this.get('block').notifyPropertyChange('data');
-      });
+        })
+        .catch((err) => {
+          this.set(
+            'scanLaunchError',
+            err.detail || 'Status check failed. Check Polarity logs.'
+          );
+          this.set('scanState', '');
+        })
+        .finally(() => {
+          this.get('block').notifyPropertyChange('data');
+          this.set('isCheckingStatus', false);
+        });
     },
     toggleExpandableTitle: function (
       displayFieldIndex,

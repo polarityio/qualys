@@ -7,19 +7,40 @@ const queryKnowledgeBaseForAllEntities = require('./querying/queryKnowledgeBaseF
 const queryScanListForAllEntities = require('./querying/queryScanListForEntities');
 const associateDataWithEntities = require('./associateDataWithEntities');
 
-const getLookupResults = async (
-  entities,
-  options,
-  requestWithDefaults,
-  Logger
-) => {
+const extractQidValue = (value) => {
+  const match = value.match(/(?:QID|qid)(?:\s*[:\-_]\s*|\s*)(\d{1,8})/i);
+  return match ? match[1] : value.trim();
+};
+
+const extractCustomQidValue = (value, customQidValueRegex) => {
+  if (customQidValueRegex) {
+    try {
+      const re = new RegExp(customQidValueRegex);
+      const match = value.match(re);
+      return match ? (match[1] !== undefined ? match[1] : match[0]) : value.trim();
+    } catch (_) {
+      // fall through to default
+    }
+  }
+  const match = value.match(/\d+$/);
+  return match ? match[0] : value.trim();
+};
+
+const getLookupResults = async (entities, options, requestWithDefaults, Logger) => {
   const entitiesWithCustomTypesSpecified = map(({ type, types, value, ...entity }) => {
     type = type === 'custom' ? flow(first, split('.'), last)(types) : type;
+
+    let resolvedValue = value;
+    if (type === 'qid') {
+      resolvedValue = extractQidValue(value);
+    } else if (type === 'customQid') {
+      resolvedValue = extractCustomQidValue(value, options.customQidValueRegex?.value);
+    }
 
     return {
       ...entity,
       type,
-      value: type === 'qid' ? flow(split(':'), last, trim)(value) : value
+      value: resolvedValue
     };
   }, entities);
 
@@ -27,12 +48,7 @@ const getLookupResults = async (
     entitiesWithCustomTypesSpecified
   );
 
-  const data = await getData(
-    entitiesPartition,
-    options,
-    requestWithDefaults,
-    Logger
-  );
+  const data = await getData(entitiesPartition, options, requestWithDefaults, Logger);
 
   const foundEntities = associateDataWithEntities(entitiesPartition, data, Logger);
   const lookupResults = createLookupResults(foundEntities, options, Logger);
@@ -40,12 +56,7 @@ const getLookupResults = async (
   return lookupResults.concat(ignoredIpLookupResults);
 };
 
-const getData = async (
-  entitiesPartition,
-  options,
-  requestWithDefaults,
-  Logger
-) => {
+const getData = async (entitiesPartition, options, requestWithDefaults, Logger) => {
   // Sequential queries — Qualys enforces concurrent call limits per subscription tier
   const allHostDetections = uniqBy(
     'id',
